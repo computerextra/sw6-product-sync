@@ -2,6 +2,12 @@
 
 Ein kleines Stück Software, um Artikellisten von Wortmann und Kosatec mit einer Shopware Instanz zu Synchronisieren.
 
+## Was wird benötigt
+
+- [Go](https://go.dev/) in Version >1.23.3
+
+Das Programm wurde unter Windows 11 entwickelt. Eine Kompatibilität mit Linux Distributionen oder Mac OS ist weder vorgesehen noch getestet.
+
 ## Wie benutze ich das Skript.
 
 Die Datei `.env-example` als `.env` Datei anlegen und alle Felder mit den korrekten Daten ausfüllen.
