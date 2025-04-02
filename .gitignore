@@ -1,2 +1,7 @@
 .env
 
+*.csv
+log.json
+log.txt
+*.zip
+temp/
