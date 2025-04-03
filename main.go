@@ -5,13 +5,18 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"runtime"
+	"time"
 
 	"github.com/computerextra/sw6-product-sync/app"
+	"github.com/computerextra/sw6-product-sync/shopware"
 )
 
 const LOG = "log.txt"
 
 func main() {
+	start := time.Now()
+
 	f, err := os.OpenFile(LOG, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
@@ -46,19 +51,22 @@ func main() {
 	// 	}
 	// }
 
-	KosatecArtikel, err := App.ReadKosatec()
-	if err != nil {
-		logger.Error("failed to read kosatec file", slog.Any("error", err))
-		stop = true
+	var NeueArtikel, AlteArtikel []shopware.Artikel
+	var EolArtikel []string
+
+	if !stop {
+		NeueArtikel, AlteArtikel, EolArtikel, err = App.SortProducts()
+		if err != nil {
+			logger.Error("failed to sort products", slog.Any("error", err))
+			stop = true
+		}
 	}
-
-	fmt.Printf("Kosatec Produkte: %v", len(KosatecArtikel))
-
-	// collection, err := App.GetAllProducts()
-	// if err != nil {
-	// 	logger.Error("failed to get all Products", slog.Any("error", err))
-	// }
-	// fmt.Printf("Anzahl der Produkte: %v", len(collection.Data))
+	logger.Info(
+		"Produkte zum Sync",
+		slog.Any("new", len(NeueArtikel)),
+		slog.Any("old", len(AlteArtikel)),
+		slog.Any("eol", len(EolArtikel)),
+	)
 
 	// if !stop {
 	// 	err = App.Cleanup()
@@ -72,7 +80,41 @@ func main() {
 		fmt.Println("Fehler")
 	}
 
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	logger.Info(
+		"used memory",
+		slog.Any("Alloc", fmt.Sprintf("%v MiB", bToMb(m.Alloc))),
+		slog.Any("TotalAlloc", fmt.Sprintf("%v MiB", bToMb(m.TotalAlloc))),
+		slog.Any("tSys", fmt.Sprintf("%v MiB", bToMb(m.Sys))),
+		slog.Any("tNumGC", m.NumGC),
+	)
+	elapsed := time.Since(start)
+	logger.Info(
+		"runtime",
+		slog.Any("started", start.String()),
+		slog.Any("ended", time.Now().String()),
+		slog.Any("elapsed ns", fmt.Sprintf("%v ns", elapsed.Nanoseconds())),
+		slog.Any("elapsed ms", fmt.Sprintf("%v ms", elapsed.Milliseconds())),
+		slog.Any("elapsed s", fmt.Sprintf("%v s", elapsed.Seconds())),
+		slog.Any("elapsed min", fmt.Sprintf("%v min", elapsed.Minutes())),
+	)
+
 	// if err := App.SendLog(LOG, stop); err != nil {
 	// 	panic(err)
 	// }
+}
+
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
+	fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
+	fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
+	fmt.Printf("\tSys = %v MiB", bToMb(m.Sys))
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }
