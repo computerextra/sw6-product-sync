@@ -23,6 +23,7 @@ func main() {
 		),
 	)
 	conf, err := config.New()
+
 	if err != nil {
 		panic(err)
 	}
@@ -34,21 +35,21 @@ func main() {
 		logger.Error("failed to create app", slog.Any("error", err))
 		stop = true
 	}
-	if !stop {
-		err = App.Download()
-		if err != nil {
-			logger.Error("failed to download Files", slog.Any("error", err))
-			stop = true
-		}
-	}
+	// if !stop {
+	// 	err = App.Download()
+	// 	if err != nil {
+	// 		logger.Error("failed to download Files", slog.Any("error", err))
+	// 		stop = true
+	// 	}
+	// }
 
-	if !stop {
-		err = App.UploadImages()
-		if err != nil {
-			logger.Error("failed to upload images", slog.Any("error", err))
-			stop = true
-		}
-	}
+	// if !stop {
+	// 	err = App.UploadImages()
+	// 	if err != nil {
+	// 		logger.Error("failed to upload images", slog.Any("error", err))
+	// 		stop = true
+	// 	}
+	// }
 
 	// collection, err := App.GetAllProducts()
 	// if err != nil {
@@ -56,12 +57,12 @@ func main() {
 	// }
 	// fmt.Printf("Anzahl der Produkte: %v", len(collection.Data))
 
-	if !stop {
-		err = App.Cleanup()
-		if err != nil {
-			logger.Error("failed to cleanup files", slog.Any("error", err))
-		}
-	}
+	// if !stop {
+	// 	err = App.Cleanup()
+	// 	if err != nil {
+	// 		logger.Error("failed to cleanup files", slog.Any("error", err))
+	// 	}
+	// }
 
 	f.Close()
 

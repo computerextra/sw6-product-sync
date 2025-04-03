@@ -52,12 +52,13 @@ func ReadFile(path string, conf config.Config) ([]*KostecProduct, error) {
 	defer file.Close()
 
 	products := []*KostecProduct{}
+	del := []rune(conf.Delimiter.Kosatec)
 
 	// Change CSV Reader to correct Delimiter
 	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
 		r := csv.NewReader(in)
 		r.LazyQuotes = true
-		r.Comma = conf.Delimiter.Kosatec
+		r.Comma = del[0]
 		return r
 	})
 

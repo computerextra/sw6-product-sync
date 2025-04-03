@@ -5,58 +5,58 @@ Wortmann = ';' # Default: ';'
 
 [Aufschlag]
 # Standard-Aufschlag für alle Artikel (Prozentual ohne MwSt)
-Protenzual = 20 # Default: 20
+Prozentual = 20 # Default: 20
 
 # Kategorien bezogene Aufschläge für alle Artikel der angegebenen Kategorie (Prozentual ohne MwSt)
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "DVI"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "HDMI"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "Displayport"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "VGA"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "USB 2.0"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "Sonstige Kabel"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "Netzanschlusskabel"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "Cat-Kabel"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "Sonstige Netzwerk-Kabel"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "Audio"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "USB 3.0"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "USB C"
 Prozent = 500
 
-[[Aufschlag.Kategorie]]
+[[Kategorie.Aufschlag]]
 Kategorie = "HDD-/ SSD-Kabel"
 Prozent = 500
 
