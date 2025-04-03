@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"strings"
+	"sync"
 
 	"github.com/computerextra/sw6-product-sync/config"
 	"github.com/computerextra/sw6-product-sync/env"
@@ -88,19 +89,50 @@ func (a App) readWortmann() ([]shopware.Artikel, error) {
 	return res, err
 }
 
+var Kosatec, Wortmann []shopware.Artikel
+var ShopArtikel *sdk.ProductCollection
+var err error
+
+func worker(wg *sync.WaitGroup, which string, a App) {
+	defer wg.Done()
+
+	switch which {
+	case "Kosatec":
+		Kosatec, err = a.readKosatec()
+	case "Wortmann":
+		Wortmann, err = a.readWortmann()
+	case "Shop":
+		ShopArtikel, err = a.getAllProducts()
+	}
+	if err != nil {
+		a.logger.Error("failed to sort products", slog.Any("error", err))
+	}
+}
+
 func (a App) SortProducts() (NeueArtikel, AlteArtikel []shopware.Artikel, EolArtikel, Hersteller []string, err error) {
-	Kosatec, err := a.readKosatec()
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-	Wortmann, err := a.readWortmann()
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
-	ShopArtikel, err := a.getAllProducts()
-	if err != nil {
-		return nil, nil, nil, nil, err
-	}
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go worker(&wg, "Kosatec", a)
+	wg.Add(1)
+	go worker(&wg, "Wortmann", a)
+	wg.Add(1)
+	go worker(&wg, "Shop", a)
+
+	wg.Wait()
+
+	// Kosatec, err := a.readKosatec()
+	// if err != nil {
+	// 	return nil, nil, nil, nil, err
+	// }
+	// Wortmann, err := a.readWortmann()
+	// if err != nil {
+	// 	return nil, nil, nil, nil, err
+	// }
+	// ShopArtikel, err := a.getAllProducts()
+	// if err != nil {
+	// 	return nil, nil, nil, nil, err
+	// }
 
 	for _, item := range Kosatec {
 		found := false

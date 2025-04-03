@@ -35,13 +35,13 @@ func main() {
 		logger.Error("failed to create app", slog.Any("error", err))
 		stop = true
 	}
-	// if !stop {
-	// 	err = App.Download()
-	// 	if err != nil {
-	// 		logger.Error("failed to download Files", slog.Any("error", err))
-	// 		stop = true
-	// 	}
-	// }
+	if !stop {
+		err = App.Download()
+		if err != nil {
+			logger.Error("failed to download Files", slog.Any("error", err))
+			stop = true
+		}
+	}
 
 	// if !stop {
 	// 	err = App.UploadImages()
@@ -69,20 +69,20 @@ func main() {
 		slog.Any("hersteller", len(Hersteller)),
 	)
 
-	if !stop {
-		err = App.SynHersteller(Hersteller)
-		if err != nil {
-			logger.Error("failed to sync manufacturer", slog.Any("error", err))
-			stop = true
-		}
-	}
-
 	// if !stop {
-	// 	err = App.Cleanup()
+	// 	err = App.SynHersteller(Hersteller)
 	// 	if err != nil {
-	// 		logger.Error("failed to cleanup files", slog.Any("error", err))
+	// 		logger.Error("failed to sync manufacturer", slog.Any("error", err))
+	// 		stop = true
 	// 	}
 	// }
+
+	if !stop {
+		err = App.Cleanup()
+		if err != nil {
+			logger.Error("failed to cleanup files", slog.Any("error", err))
+		}
+	}
 
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -106,19 +106,9 @@ func main() {
 
 	f.Close()
 
-	// if err := App.SendLog(LOG, stop); err != nil {
-	// 	panic(err)
-	// }
-}
-
-func PrintMemUsage() {
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
-	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
-	fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
-	fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
-	fmt.Printf("\tSys = %v MiB", bToMb(m.Sys))
-	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+	if err := App.SendLog(LOG, stop); err != nil {
+		panic(err)
+	}
 }
 
 func bToMb(b uint64) uint64 {

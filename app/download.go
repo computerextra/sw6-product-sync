@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jlaffaye/ftp"
@@ -20,25 +21,63 @@ const WortmannCatalog = "productcatalog.csv"
 const WortmannImages = "productimages.zip"
 const ImageFolder = "temp"
 
-func (a App) Download() error {
-	n, err := download_kosatec(a.env.KOSATEC_URL)
-	if err != nil {
-		a.logger.Error("failed to download kosatec file", slog.Any("error", err))
-		return err
-	}
-	a.logger.Info("downloaded kosatec file", slog.Any("bytes written", n))
+func download_worker(wg *sync.WaitGroup, which string, a App) {
+	defer wg.Done()
 
-	n, err = download_wortmann(fmt.Sprintf("%s:21", a.env.WORTMANN_FTP_SERVER), a.env.WORTMANN_FTP_SERVER_USER, a.env.WORTMANN_FTP_SERVER_PASSWORD)
-	if err != nil {
-		a.logger.Error("failed to download wortmann files", slog.Any("error", err))
-		return err
+	switch which {
+	case "Kosatec":
+		n, err := download_kosatec(a.env.KOSATEC_URL)
+		if err != nil {
+			a.logger.Error("failed to download kosatec file", slog.Any("error", err))
+		} else {
+			a.logger.Info("downloaded kosatec file", slog.Any("bytes written", n))
+		}
+	case "Wortmann":
+		n, err := download_wortmann(fmt.Sprintf("%s:21", a.env.WORTMANN_FTP_SERVER), a.env.WORTMANN_FTP_SERVER_USER, a.env.WORTMANN_FTP_SERVER_PASSWORD)
+		if err != nil {
+			a.logger.Error("failed to download wortmann files", slog.Any("error", err))
+
+		} else {
+			a.logger.Info("downloaded wortmann files", slog.Any("bytes written", n))
+		}
+		err = unzip(WortmannImages, ImageFolder)
+		if err != nil {
+			a.logger.Error("failed to unpack images", slog.Any("error", err))
+		} else {
+			a.logger.Info("successfully unpacked image files")
+		}
 	}
-	a.logger.Info("downloaded wortmann files", slog.Any("bytes written", n))
-	err = unzip(WortmannImages, ImageFolder)
 	if err != nil {
-		a.logger.Error("failed to unpack images", slog.Any("error", err))
+		a.logger.Error("failed to download files", slog.Any("error", err))
 	}
-	a.logger.Info("successfully unpacked image files")
+}
+
+func (a App) Download() error {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go download_worker(&wg, "Kosatec", a)
+	wg.Add(1)
+	go download_worker(&wg, "Wortmann", a)
+
+	wg.Wait()
+	// n, err := download_kosatec(a.env.KOSATEC_URL)
+	// if err != nil {
+	// 	a.logger.Error("failed to download kosatec file", slog.Any("error", err))
+	// 	return err
+	// }
+	// a.logger.Info("downloaded kosatec file", slog.Any("bytes written", n))
+
+	// n, err = download_wortmann(fmt.Sprintf("%s:21", a.env.WORTMANN_FTP_SERVER), a.env.WORTMANN_FTP_SERVER_USER, a.env.WORTMANN_FTP_SERVER_PASSWORD)
+	// if err != nil {
+	// 	a.logger.Error("failed to download wortmann files", slog.Any("error", err))
+	// 	return err
+	// }
+	// a.logger.Info("downloaded wortmann files", slog.Any("bytes written", n))
+	// err = unzip(WortmannImages, ImageFolder)
+	// if err != nil {
+	// 	a.logger.Error("failed to unpack images", slog.Any("error", err))
+	// }
+	// a.logger.Info("successfully unpacked image files")
 	return nil
 }
 
