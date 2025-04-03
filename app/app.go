@@ -11,6 +11,7 @@ import (
 	"github.com/computerextra/sw6-product-sync/shopware"
 	"github.com/computerextra/sw6-product-sync/wortmann"
 	sdk "github.com/friendsofshopware/go-shopware-admin-api-sdk"
+	"github.com/gofrs/uuid/v5"
 )
 
 type App struct {
@@ -49,6 +50,15 @@ func New(logger *slog.Logger) (*App, error) {
 	}, nil
 }
 
+func (a App) Uuid(name string) (string, error) {
+	namespace, err := uuid.FromString(a.env.MY_NAMESPACE)
+	if err != nil {
+		return "", nil
+	}
+	u1 := uuid.NewV5(namespace, name)
+	return strings.ReplaceAll(u1.String(), "-", ""), nil
+}
+
 func (a App) getAllProducts() (*sdk.ProductCollection, error) {
 	apiContext := sdk.NewApiContext(a.ctx)
 	criteria := sdk.Criteria{}
@@ -78,22 +88,23 @@ func (a App) readWortmann() ([]shopware.Artikel, error) {
 	return res, err
 }
 
-func (a App) SortProducts() (NeueArtikel, AlteArtikel []shopware.Artikel, EolArtikel []string, err error) {
+func (a App) SortProducts() (NeueArtikel, AlteArtikel []shopware.Artikel, EolArtikel, Hersteller []string, err error) {
 	Kosatec, err := a.readKosatec()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	Wortmann, err := a.readWortmann()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	ShopArtikel, err := a.getAllProducts()
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	for _, item := range Kosatec {
 		found := false
+		Hersteller = append(Hersteller, item.Hersteller)
 		for _, prod := range ShopArtikel.Data {
 			if item.Artikelnummer == prod.ProductNumber {
 				AlteArtikel = append(AlteArtikel, item)
@@ -107,6 +118,7 @@ func (a App) SortProducts() (NeueArtikel, AlteArtikel []shopware.Artikel, EolArt
 	}
 	for _, item := range Wortmann {
 		found := false
+		Hersteller = append(Hersteller, item.Hersteller)
 		for _, prod := range ShopArtikel.Data {
 			if item.Artikelnummer == prod.ProductNumber {
 				AlteArtikel = append(AlteArtikel, item)
@@ -140,6 +152,42 @@ func (a App) SortProducts() (NeueArtikel, AlteArtikel []shopware.Artikel, EolArt
 		}
 	}
 
+	Hersteller = removeDuplicate(Hersteller)
+
 	a.logger.Info("Successfully Sort Products")
-	return NeueArtikel, AlteArtikel, EolArtikel, nil
+	return NeueArtikel, AlteArtikel, EolArtikel, Hersteller, nil
+}
+
+func (a App) SynHersteller(Hersteller []string) error {
+	apiContext := sdk.NewApiContext(a.ctx)
+	var entity []sdk.ProductManufacturer
+	for _, x := range Hersteller {
+		id, err := a.Uuid(x)
+		if err != nil {
+			return err
+		}
+		entity = append(entity, sdk.ProductManufacturer{
+			Id:   id,
+			Name: x,
+		})
+	}
+	_, err := a.client.Repository.ProductManufacturer.Upsert(apiContext, entity)
+	if err != nil {
+		return err
+	}
+	a.logger.Info("successfully synchronized manufacturer")
+
+	return nil
+}
+
+func removeDuplicate[T comparable](sliceList []T) []T {
+	allKeys := make(map[T]bool)
+	list := []T{}
+	for _, item := range sliceList {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
 }

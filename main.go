@@ -52,10 +52,10 @@ func main() {
 	// }
 
 	var NeueArtikel, AlteArtikel []shopware.Artikel
-	var EolArtikel []string
+	var EolArtikel, Hersteller []string
 
 	if !stop {
-		NeueArtikel, AlteArtikel, EolArtikel, err = App.SortProducts()
+		NeueArtikel, AlteArtikel, EolArtikel, Hersteller, err = App.SortProducts()
 		if err != nil {
 			logger.Error("failed to sort products", slog.Any("error", err))
 			stop = true
@@ -66,7 +66,16 @@ func main() {
 		slog.Any("new", len(NeueArtikel)),
 		slog.Any("old", len(AlteArtikel)),
 		slog.Any("eol", len(EolArtikel)),
+		slog.Any("hersteller", len(Hersteller)),
 	)
+
+	if !stop {
+		err = App.SynHersteller(Hersteller)
+		if err != nil {
+			logger.Error("failed to sync manufacturer", slog.Any("error", err))
+			stop = true
+		}
+	}
 
 	// if !stop {
 	// 	err = App.Cleanup()
@@ -74,11 +83,6 @@ func main() {
 	// 		logger.Error("failed to cleanup files", slog.Any("error", err))
 	// 	}
 	// }
-
-	f.Close()
-	if stop {
-		fmt.Println("Fehler")
-	}
 
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -99,6 +103,8 @@ func main() {
 		slog.Any("elapsed s", fmt.Sprintf("%v s", elapsed.Seconds())),
 		slog.Any("elapsed min", fmt.Sprintf("%v min", elapsed.Minutes())),
 	)
+
+	f.Close()
 
 	// if err := App.SendLog(LOG, stop); err != nil {
 	// 	panic(err)

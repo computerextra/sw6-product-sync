@@ -7,6 +7,7 @@ require (
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/friendsofshopware/go-shopware-admin-api-sdk v0.0.0-20240608075117-3c16ae8b5f02
 	github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1
+	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/jlaffaye/ftp v0.2.0
 	github.com/joho/godotenv v1.5.1
 	gopkg.in/mail.v2 v2.3.1
