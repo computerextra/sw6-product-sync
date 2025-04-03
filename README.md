@@ -5,6 +5,7 @@ Ein kleines Stück Software, um Artikellisten von Wortmann und Kosatec mit einer
 ## Was wird benötigt
 
 - [Go](https://go.dev/) in Version >1.23.3
+- [Apple Pkl](https://pkl-lang.org/go/current/quickstart.html) `go install github.com/apple/pkl-go/cmd/pkl-gen-go@v0.9.0`
 
 Das Programm wurde unter Windows 11 entwickelt. Eine Kompatibilität mit Linux Distributionen oder Mac OS ist weder vorgesehen noch getestet.
 

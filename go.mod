@@ -13,6 +13,8 @@ require (
 require github.com/stretchr/testify v1.10.0 // indirect
 
 require (
+	github.com/apple/pkl-go v0.9.0 // indirect
+	github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
