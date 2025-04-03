@@ -6,6 +6,8 @@ import (
 
 	"github.com/computerextra/sw6-product-sync/config"
 	"github.com/computerextra/sw6-product-sync/env"
+	"github.com/computerextra/sw6-product-sync/kosatec"
+	"github.com/computerextra/sw6-product-sync/shopware"
 	sdk "github.com/friendsofshopware/go-shopware-admin-api-sdk"
 )
 
@@ -17,13 +19,18 @@ type App struct {
 	config *config.Config
 }
 
-func New(logger *slog.Logger, conf *config.Config) (*App, error) {
+func New(logger *slog.Logger) (*App, error) {
 
 	env, err := env.Get()
 	if err != nil {
 		return nil, err
 	}
 	ctx := context.Background()
+
+	conf, err := config.New()
+	if err != nil {
+		return nil, err
+	}
 
 	// creds := sdk.NewPasswordCredentials(env.SW6_ADMIN_USERNAME, env.SW6_ADMIN_PASSWORD, []string{})
 	// client, err := sdk.NewApiClient(ctx, env.BASE_URL, creds, nil)
@@ -50,4 +57,8 @@ func (a App) GetAllProducts() (*sdk.ProductCollection, error) {
 		return nil, err
 	}
 	return collection, nil
+}
+
+func (a App) ReadKosatec() ([]shopware.Artikel, error) {
+	return kosatec.ReadFile(KosatecFile, *a.config)
 }

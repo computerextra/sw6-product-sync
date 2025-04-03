@@ -1,12 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
 
 	"github.com/computerextra/sw6-product-sync/app"
-	"github.com/computerextra/sw6-product-sync/config"
 )
 
 const LOG = "log.txt"
@@ -22,15 +22,10 @@ func main() {
 			slog.NewTextHandler(f, nil),
 		),
 	)
-	conf, err := config.New()
-
-	if err != nil {
-		panic(err)
-	}
 
 	var stop = false
 
-	App, err := app.New(logger, conf)
+	App, err := app.New(logger)
 	if err != nil {
 		logger.Error("failed to create app", slog.Any("error", err))
 		stop = true
@@ -51,6 +46,14 @@ func main() {
 	// 	}
 	// }
 
+	KosatecArtikel, err := App.ReadKosatec()
+	if err != nil {
+		logger.Error("failed to read kosatec file", slog.Any("error", err))
+		stop = true
+	}
+
+	fmt.Printf("Kosatec Produkte: %v", len(KosatecArtikel))
+
 	// collection, err := App.GetAllProducts()
 	// if err != nil {
 	// 	logger.Error("failed to get all Products", slog.Any("error", err))
@@ -65,8 +68,11 @@ func main() {
 	// }
 
 	f.Close()
-
-	if err := App.SendLog(LOG, stop); err != nil {
-		panic(err)
+	if stop {
+		fmt.Println("Fehler")
 	}
+
+	// if err := App.SendLog(LOG, stop); err != nil {
+	// 	panic(err)
+	// }
 }
