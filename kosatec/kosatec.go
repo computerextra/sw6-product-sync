@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/computerextra/sw6-product-sync/config"
 	"github.com/gocarina/gocsv"
 )
 
@@ -43,7 +44,7 @@ type KostecProduct struct {
 	Images_xl      string `csv:"images_xl"` // delimiter ";"
 }
 
-func ReadFile(path string, delimiter rune) ([]*KostecProduct, error) {
+func ReadFile(path string, conf config.Config) ([]*KostecProduct, error) {
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func ReadFile(path string, delimiter rune) ([]*KostecProduct, error) {
 	gocsv.SetCSVReader(func(in io.Reader) gocsv.CSVReader {
 		r := csv.NewReader(in)
 		r.LazyQuotes = true
-		r.Comma = delimiter
+		r.Comma = conf.Delimiter.Kosatec
 		return r
 	})
 
@@ -64,7 +65,7 @@ func ReadFile(path string, delimiter rune) ([]*KostecProduct, error) {
 		return nil, err
 	}
 
-	products, err = sort_products(products)
+	products, err = sort_products(products, conf)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +73,8 @@ func ReadFile(path string, delimiter rune) ([]*KostecProduct, error) {
 	return products, nil
 }
 
-func sort_products(products []*KostecProduct) ([]*KostecProduct, error) {
+func sort_products(products []*KostecProduct, conf config.Config) ([]*KostecProduct, error) {
 	// TODO: Implement Sorting!
-	// TODO: Implement Comfig
+
 	return products, nil
 }

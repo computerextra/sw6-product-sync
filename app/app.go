@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/computerextra/sw6-product-sync/config"
 	"github.com/computerextra/sw6-product-sync/env"
 	sdk "github.com/friendsofshopware/go-shopware-admin-api-sdk"
 )
@@ -13,9 +14,10 @@ type App struct {
 	client *sdk.Client
 	env    *env.Env
 	logger *slog.Logger
+	config *config.Config
 }
 
-func New(logger *slog.Logger) (*App, error) {
+func New(logger *slog.Logger, conf *config.Config) (*App, error) {
 
 	env, err := env.Get()
 	if err != nil {
@@ -34,6 +36,7 @@ func New(logger *slog.Logger) (*App, error) {
 		// client: client,
 		logger: logger,
 		env:    env,
+		config: conf,
 	}, nil
 }
 

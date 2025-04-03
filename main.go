@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/computerextra/sw6-product-sync/app"
+	"github.com/computerextra/sw6-product-sync/config"
 )
 
 const LOG = "log.txt"
@@ -21,9 +22,14 @@ func main() {
 			slog.NewTextHandler(f, nil),
 		),
 	)
+	conf, err := config.New()
+	if err != nil {
+		panic(err)
+	}
+
 	var stop = false
 
-	App, err := app.New(logger)
+	App, err := app.New(logger, conf)
 	if err != nil {
 		logger.Error("failed to create app", slog.Any("error", err))
 		stop = true

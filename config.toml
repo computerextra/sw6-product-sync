@@ -1,0 +1,375 @@
+# CSV Trennzeichen
+[Delimiter]
+Kosatec = '\t' # Default: '\t'
+Wortmann = ';' # Default: ';'
+
+[Aufschlag]
+# Standard-Aufschlag für alle Artikel (Prozentual ohne MwSt)
+Protenzual = 20 # Default: 20
+
+# Kategorien bezogene Aufschläge für alle Artikel der angegebenen Kategorie (Prozentual ohne MwSt)
+[[Aufschlag.Kategorie]]
+Kategorie = "DVI"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "HDMI"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "Displayport"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "VGA"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "USB 2.0"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "Sonstige Kabel"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "Netzanschlusskabel"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "Cat-Kabel"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "Sonstige Netzwerk-Kabel"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "Audio"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "USB 3.0"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "USB C"
+Prozent = 500
+
+[[Aufschlag.Kategorie]]
+Kategorie = "HDD-/ SSD-Kabel"
+Prozent = 500
+
+[Ignore]
+# Liste von Kategorien, die nicht importiert werden sollen
+Kategorien = [
+    "Server Barebone",
+    "Server",
+    "CSP Cloud",
+    "ESD-Lizenzen",
+    "Tinte / Toner kompatibel",
+    "Neuer Artikel",
+    "Volumenlizenzen",
+    "Awareness Training",
+    "Security-Lizenzen",
+    "Garantieerweiterungen",
+]
+# Liste von Artikelnummern, die nicht importiert werden sollen
+Produkte = []
+
+# Überschreibt Kategorien in den Listen mit dem angegebenen Index (Index = 1 => Erste Kategorie, Index = 2 => zweite Kategorie, etc.)
+[[Override]]
+AlterName = "Netzwerk"
+NeuerName = "Networking"
+Index = 1
+
+# Legt die nachfolgenden Kategorien als Hauptmenü fest, es ist auch möglich Unterkategorien zu erstellen.
+[[Kategorien]]
+Name = "Apple"
+
+[[Kategorien]]
+Name = "Komponenten"
+Unterkategorien = [
+    "Arbeitsspeicher",
+    "CPUs",
+    "Gehäuse",
+    "Grafikkarten",
+    "Festplatten",
+    "Laufwerke",
+    "Mainboards & Zubehör",
+    "Netzteile",
+    "SSDs",
+    "Multimedia",
+]
+
+[[Kategorien]]
+Name = "PC-Systeme"
+Unterkategorien = [
+    "Marken PCs",
+    "Mini-PC / Barebones",
+    "All in one Systeme",
+    "Innovation PC Systeme",
+    "PC Zubehör",
+]
+
+[[Kategorien]]
+Name = "Displays"
+
+[[Kategorien]]
+Name = "Home & Living"
+
+[[Kategorien]]
+Name = "Hardware"
+Unterkategorien = [
+    "Beamer",
+    "Drucker & Scanner",
+    "Flash-Speicher",
+    "Eingabegeräte",
+    "Energie & USV",
+    "Kabel & Adapter",
+    "Verbrauchsmaterialien",
+]
+
+[[Kategorien]]
+Name = "Mobile"
+Unterkategorien = ["Notebooks & Zubehör", "Tablets & Smartphones"]
+
+[[Kategorien]]
+Name = "Networking"
+Unterkategorien = ["Festnetz-Telefonie", "Firewall"]
+
+[[Kategorien]]
+Name = "Software"
+
+[[Kategorien]]
+Name = "Used IT"
+
+[[Kategorien]]
+Name = "Warehouse Deals"
+
+# Diese Artikel werden mit den angegebenen Preisen versehen und ignorieren die konfigurierten Aufschläge
+[[UVP]]
+Artikelnummer = "K122998"
+Brutto = 259.9
+Netto = 218.4
+
+[[UVP]]
+Artikelnummer = "K123005"
+Brutto = 259.9
+Netto = 218.4
+
+[[UVP]]
+Artikelnummer = "K122996"
+Brutto = 259.9
+Netto = 218.4
+
+[[UVP]]
+Artikelnummer = "K122997"
+Brutto = 259.9
+Netto = 218.4
+
+[[UVP]]
+Artikelnummer = "K122995"
+Brutto = 144.9
+Netto = 121.76
+
+[[UVP]]
+Artikelnummer = "K122993"
+Brutto = 144.9
+Netto = 121.76
+
+[[UVP]]
+Artikelnummer = "K122994"
+Brutto = 144.9
+Netto = 121.76
+
+[[UVP]]
+Artikelnummer = "K122991"
+Brutto = 144.9
+Netto = 121.76
+
+[[UVP]]
+Artikelnummer = "K123403"
+Brutto = 219.9
+Netto = 184.03
+
+[[UVP]]
+Artikelnummer = "K126228"
+Brutto = 289.0
+Netto = 242.86
+
+[[UVP]]
+Artikelnummer = "K730173"
+Brutto = 79.0
+Netto = 66.39
+
+[[UVP]]
+Artikelnummer = "K121607"
+Brutto = 89.0
+Netto = 74.79
+
+[[UVP]]
+Artikelnummer = "K110595"
+Brutto = 89.0
+Netto = 74.79
+
+[[UVP]]
+Artikelnummer = "K775435"
+Brutto = 59.0
+Netto = 49.58
+
+[[UVP]]
+Artikelnummer = "K698122"
+Brutto = 109.0
+Netto = 91.6
+
+[[UVP]]
+Artikelnummer = "K124667"
+Brutto = 269.0
+Netto = 226.05
+
+[[UVP]]
+Artikelnummer = "K116596"
+Brutto = 269.0
+Netto = 226.05
+
+[[UVP]]
+Artikelnummer = "K124636"
+Brutto = 329.0
+Netto = 276.47
+
+[[UVP]]
+Artikelnummer = "K115086"
+Brutto = 159.0
+Netto = 133.61
+
+[[UVP]]
+Artikelnummer = "K126656"
+Brutto = 219.0
+Netto = 184.03
+
+[[UVP]]
+Artikelnummer = "K103907"
+Brutto = 439.0
+Netto = 368.91
+
+[[UVP]]
+Artikelnummer = "K124377"
+Brutto = 119.0
+Netto = 100.0
+
+[[UVP]]
+Artikelnummer = "K122629"
+Brutto = 199.0
+Netto = 167.23
+
+
+[[UVP]]
+Artikelnummer = "K125616"
+Brutto = 319.0
+Netto = 268.07
+
+[[UVP]]
+Artikelnummer = "K132256"
+Brutto = 99.0
+Netto = 83.19
+
+[[UVP]]
+Artikelnummer = "K124378"
+Brutto = 95.0
+Netto = 79.83
+
+[[UVP]]
+Artikelnummer = "K111847"
+Brutto = 109.0
+Netto = 91.6
+
+[[UVP]]
+Artikelnummer = "K128024"
+Brutto = 189.0
+Netto = 158.82
+
+[[UVP]]
+Artikelnummer = "K110217"
+Brutto = 39.0
+Netto = 32.77
+
+[[UVP]]
+Artikelnummer = "K391769"
+Brutto = 39.0
+Netto = 32.77
+
+[[UVP]]
+Artikelnummer = "K721081"
+Brutto = 49.0
+Netto = 41.18
+
+[[UVP]]
+Artikelnummer = "K130858"
+Brutto = 89.0
+Netto = 74.79
+
+[[UVP]]
+Artikelnummer = "K102455"
+Brutto = 59.0
+Netto = 49.58
+
+[[UVP]]
+Artikelnummer = "K127148"
+Brutto = 69.0
+Netto = 57.98
+
+[[UVP]]
+Artikelnummer = "K730174"
+Brutto = 49.0
+Netto = 41.18
+
+[[UVP]]
+Artikelnummer = "K154036"
+Brutto = 59.0
+Netto = 49.58
+
+[[UVP]]
+Artikelnummer = "K126671"
+Brutto = 65.0
+Netto = 54.62
+
+[[UVP]]
+Artikelnummer = "K108301"
+Brutto = 89.0
+Netto = 74.79
+
+[[UVP]]
+Artikelnummer = "K172240"
+Brutto = 139.0
+Netto = 116.81
+
+[[UVP]]
+Artikelnummer = "K133573"
+Brutto = 169.0
+Netto = 142.02
+
+[[UVP]]
+Artikelnummer = "K165628"
+Brutto = 149.0
+Netto = 125.21
+
+[[UVP]]
+Artikelnummer = "K103264"
+Brutto = 179.0
+Netto = 150.42
+
+[[UVP]]
+Artikelnummer = "K564200"
+Brutto = 59.0
+Netto = 49.58
+
+[[UVP]]
+Artikelnummer = "K503329"
+Brutto = 99.0
+Netto = 83.19
+
+[[UVP]]
+Artikelnummer = "K134504"
+Brutto = 39.0
+Netto = 32.77
