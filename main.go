@@ -43,13 +43,13 @@ func main() {
 		}
 	}
 
-	// if !stop {
-	// 	err = App.UploadImages()
-	// 	if err != nil {
-	// 		logger.Error("failed to upload images", slog.Any("error", err))
-	// 		stop = true
-	// 	}
-	// }
+	if !stop {
+		err = App.UploadImages()
+		if err != nil {
+			logger.Error("failed to upload images", slog.Any("error", err))
+			stop = true
+		}
+	}
 
 	var NeueArtikel, AlteArtikel []shopware.Artikel
 	var EolArtikel, Hersteller []string
@@ -69,13 +69,13 @@ func main() {
 		slog.Any("hersteller", len(Hersteller)),
 	)
 
-	// if !stop {
-	// 	err = App.SynHersteller(Hersteller)
-	// 	if err != nil {
-	// 		logger.Error("failed to sync manufacturer", slog.Any("error", err))
-	// 		stop = true
-	// 	}
-	// }
+	if !stop {
+		err = App.SynHersteller(Hersteller)
+		if err != nil {
+			logger.Error("failed to sync manufacturer", slog.Any("error", err))
+			stop = true
+		}
+	}
 
 	if !stop {
 		err = App.Cleanup()
