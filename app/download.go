@@ -60,24 +60,7 @@ func (a App) Download() error {
 	go download_worker(&wg, "Wortmann", a)
 
 	wg.Wait()
-	// n, err := download_kosatec(a.env.KOSATEC_URL)
-	// if err != nil {
-	// 	a.logger.Error("failed to download kosatec file", slog.Any("error", err))
-	// 	return err
-	// }
-	// a.logger.Info("downloaded kosatec file", slog.Any("bytes written", n))
 
-	// n, err = download_wortmann(fmt.Sprintf("%s:21", a.env.WORTMANN_FTP_SERVER), a.env.WORTMANN_FTP_SERVER_USER, a.env.WORTMANN_FTP_SERVER_PASSWORD)
-	// if err != nil {
-	// 	a.logger.Error("failed to download wortmann files", slog.Any("error", err))
-	// 	return err
-	// }
-	// a.logger.Info("downloaded wortmann files", slog.Any("bytes written", n))
-	// err = unzip(WortmannImages, ImageFolder)
-	// if err != nil {
-	// 	a.logger.Error("failed to unpack images", slog.Any("error", err))
-	// }
-	// a.logger.Info("successfully unpacked image files")
 	return nil
 }
 

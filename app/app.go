@@ -121,19 +121,6 @@ func (a App) SortProducts() (NeueArtikel, AlteArtikel []shopware.Artikel, EolArt
 
 	wg.Wait()
 
-	// Kosatec, err := a.readKosatec()
-	// if err != nil {
-	// 	return nil, nil, nil, nil, err
-	// }
-	// Wortmann, err := a.readWortmann()
-	// if err != nil {
-	// 	return nil, nil, nil, nil, err
-	// }
-	// ShopArtikel, err := a.getAllProducts()
-	// if err != nil {
-	// 	return nil, nil, nil, nil, err
-	// }
-
 	for _, item := range Kosatec {
 		found := false
 		Hersteller = append(Hersteller, item.Hersteller)

@@ -5,49 +5,62 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jlaffaye/ftp"
 )
 
-func (a App) Cleanup() error {
-	warn := false
-	err := os.Remove(KosatecFile)
-	if err != nil {
-		a.logger.Warn("file not found", slog.Any("error", err))
-		warn = true
+func cleanup_worker(wg *sync.WaitGroup, which string, a App) {
+	defer wg.Done()
+
+	switch which {
+	case "Kosatec":
+		err := os.Remove(KosatecFile)
+		if err != nil {
+			a.logger.Warn("file not found", slog.Any("error", err))
+		}
+	case "Wortmann":
+		err := os.Remove(WortmannCatalog)
+		if err != nil {
+			a.logger.Warn("file not found", slog.Any("error", err))
+		}
+		err = os.Remove(WortmannContent)
+		if err != nil {
+			a.logger.Warn("file not found", slog.Any("error", err))
+		}
+		err = os.Remove(WortmannImages)
+		if err != nil {
+			a.logger.Warn("file not found", slog.Any("error", err))
+		}
+	case "ImageFolder":
+		err := os.RemoveAll(ImageFolder)
+		if err != nil {
+			a.logger.Warn("file not found", slog.Any("error", err))
+		}
+	case "FTP":
+		err := delete_from_ftp(a.env.FTP_PATH, a.env.FTP_HOST, a.env.FTP_USER, a.env.FTP_PASSWORD)
+		if err != nil {
+			a.logger.Warn("cannot delete from Server", slog.Any("error", err))
+		}
+	default:
+		a.logger.Error("unknown cleanup type")
 	}
-	err = os.Remove(WortmannCatalog)
-	if err != nil {
-		a.logger.Warn("file not found", slog.Any("error", err))
-		warn = true
-	}
-	err = os.Remove(WortmannContent)
-	if err != nil {
-		a.logger.Warn("file not found", slog.Any("error", err))
-		warn = true
-	}
-	err = os.Remove(WortmannImages)
-	if err != nil {
-		a.logger.Warn("file not found", slog.Any("error", err))
-		warn = true
-	}
-	err = os.RemoveAll(ImageFolder)
-	if err != nil {
-		a.logger.Warn("file not found", slog.Any("error", err))
-		warn = true
-	}
-	err = delete_from_ftp(a.env.FTP_PATH, a.env.FTP_HOST, a.env.FTP_USER, a.env.FTP_PASSWORD)
-	if err != nil {
-		a.logger.Warn("cannot delete from Server", slog.Any("error", err))
-		warn = true
-	}
-	if warn {
-		a.logger.Warn("Failed Cleanup!")
-	} else {
-		a.logger.Info("Successfull cleaned up")
-	}
-	return nil
+}
+
+func (a App) Cleanup() {
+	a.logger.Info("cleanup started")
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go cleanup_worker(&wg, "Kosatec", a)
+	wg.Add(1)
+	go cleanup_worker(&wg, "Wortmann", a)
+	wg.Add(1)
+	go cleanup_worker(&wg, "ImageFolder", a)
+	wg.Add(1)
+	go cleanup_worker(&wg, "FTP", a)
+	a.logger.Info("cleanup done")
+	wg.Wait()
 }
 
 func delete_from_ftp(path, server, user, password string) error {

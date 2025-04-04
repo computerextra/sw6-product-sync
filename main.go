@@ -78,10 +78,7 @@ func main() {
 	}
 
 	if !stop {
-		err = App.Cleanup()
-		if err != nil {
-			logger.Error("failed to cleanup files", slog.Any("error", err))
-		}
+		App.Cleanup()
 	}
 
 	var m runtime.MemStats
