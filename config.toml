@@ -73,15 +73,68 @@ Kategorien = [
     "Awareness Training",
     "Security-Lizenzen",
     "Garantieerweiterungen",
+    "Verkaufsförderung",
+    "CLOUD_HARDWARE",
+    "SERVER",
+    "MMonitore",
+    "Werbegeschenke",
+    "CLOUD_IAAS",
+    "ZZZ Alte Warengruppen",
+    "CLOUD_STORAGE",
+    "CLOUD_BACKUP",
+    "Schulungen",
+    "LCD Messeware",
+    "AV-Zubehör",
 ]
 # Liste von Artikelnummern, die nicht importiert werden sollen
 Produkte = []
 
-# Überschreibt Kategorien in den Listen mit dem angegebenen Index (Index = 1 => Erste Kategorie, Index = 2 => zweite Kategorie, etc.)
+# Überschreibt Kategorien in den Listen mit dem angegebenen Index (Index = 1 => Erste Kategorie, Index = 2 => zweite Kategorie, etc. Max. Index: 6)
 [[Override]]
 AlterName = "Netzwerk"
 NeuerName = "Networking"
 Index = 1
+
+[[Override]]
+AlterName = "All in One PC-Systeme"
+NeuerName = "All in one Systeme"
+Index = 1
+
+[[Override]]
+AlterName = "Eingabe Zubehör"
+NeuerName = "Eingabegeräte"
+Index = 1
+
+[[Override]]
+AlterName = "Tastaturen"
+NeuerName = "Eingabegeräte"
+Index = 1
+
+[[Override]]
+AlterName = "Mäuse"
+NeuerName = "Eingabegeräte"
+Index = 1
+
+[[Override]]
+AlterName = "Modems"
+NeuerName = "Bridges & Router"
+Index = 1
+
+[[Override]]
+AlterName = "System- & Stromkabel"
+NeuerName = "Kabel & Adapter"
+Index = 1
+
+[[Override]]
+AlterName = "Netzteile & USVs"
+NeuerName = "Netzteile"
+Index = 1
+
+[[Override]]
+AlterName = "Notebooks & Zubehör"
+NeuerName = "Notebooks"
+Index = 1
+
 
 # Legt die nachfolgenden Kategorien als Hauptmenü fest, es ist auch möglich Unterkategorien zu erstellen.
 [[Kategorien]]
@@ -100,6 +153,8 @@ Unterkategorien = [
     "Netzteile",
     "SSDs",
     "Multimedia",
+    "Kartenleser",
+    "Audio & Video",
 ]
 
 [[Kategorien]]
@@ -110,13 +165,17 @@ Unterkategorien = [
     "All in one Systeme",
     "Innovation PC Systeme",
     "PC Zubehör",
+    "Systemzubehör",
+    "Ersatzteile",
 ]
 
 [[Kategorien]]
 Name = "Displays"
+Unterkategorien = ["Beamer & Zubehör"]
 
 [[Kategorien]]
 Name = "Home & Living"
+Unterkategorien = ["Drohnen"]
 
 [[Kategorien]]
 Name = "Hardware"
@@ -127,16 +186,32 @@ Unterkategorien = [
     "Eingabegeräte",
     "Energie & USV",
     "Kabel & Adapter",
+    "Eingabe Adapter",
+    "Speicheradapter",
     "Verbrauchsmaterialien",
+    "PC- & Netzwerkkameras",
+    "Optische- und Bandlaufwerke",
 ]
 
 [[Kategorien]]
 Name = "Mobile"
-Unterkategorien = ["Notebooks & Zubehör", "Tablets & Smartphones"]
+Unterkategorien = [
+    "Notebooks",
+    "Tablets",
+    "Notebooktaschen",
+    "Zubehör Notebooks",
+    "Netzteil / Akku",
+    "Tablets & Smartphones",
+]
 
 [[Kategorien]]
 Name = "Networking"
-Unterkategorien = ["Festnetz-Telefonie", "Firewall"]
+Unterkategorien = [
+    "Festnetz-Telefonie",
+    "Firewall",
+    "Bridges & Router",
+    "Netzwerkzubehör",
+]
 
 [[Kategorien]]
 Name = "Software"

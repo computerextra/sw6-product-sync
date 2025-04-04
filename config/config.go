@@ -6,6 +6,11 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+type Aufschlag struct {
+	Kategorie string
+	Prozent   int
+}
+
 type Config struct {
 	Delimiter struct {
 		Kosatec  string
@@ -14,11 +19,8 @@ type Config struct {
 	Aufschlag struct {
 		Prozentual int
 	}
-	Kategorie map[string][]struct {
-		Kategorie string
-		Prozent   int
-	}
-	Ignore struct {
+	Kategorie map[string][]Aufschlag
+	Ignore    struct {
 		Kategorien []string
 		Produkte   []string
 	}
