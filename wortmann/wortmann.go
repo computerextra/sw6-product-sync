@@ -14,65 +14,65 @@ import (
 )
 
 type ProductCatalog struct {
-	ProductId                        string `csv:"ProductId"`
-	ReferenceNo                      string `csv:"ReferenceNo"`
-	EAN                              string `csv:"EAN"`
-	Manufacturer                     string `csv:"Manufacturer"`
-	Price_B2B_Regular                string `csv:"Price_B2B_Regular"`
-	Price_B2B_Discounted             string `csv:"Price_B2B_Discounted"`
-	Price_B2B_DiscountPercent        string `csv:"Price_B2B_DiscountPercent"`
-	Price_B2B_DiscountAmount         string `csv:"Price_B2B_DiscountAmount"`
-	Price_B2C_exclVAT                string `csv:"Price_B2C_exclVAT"`
-	Price_B2C_inclVAT                string `csv:"Price_B2C_inclVAT"`
-	Price_B2C_VATRate                string `csv:"Price_B2C_VATRate"`
-	Price_B2C_VATCountry             string `csv:"Price_B2C_VATCountry"`
-	Price_B2X_Currency               string `csv:"Price_B2X_Currency"`
-	Stock                            string `csv:"Stock"`
-	StockNextDelivery                string `csv:"StockNextDelivery"`
-	StockNextDeliveryAccessVolume    string `csv:"StockNextDeliveryAccessVolume"`
-	WarrantyCode                     string `csv:"WarrantyCode"`
-	EOL                              string `csv:"EOL"`
-	Promotion                        string `csv:"Promotion"`
-	NonReturnable                    string `csv:"NonReturnable"`
-	RemainingStock                   string `csv:"RemainingStock"`
-	ImagePrimary                     string `csv:"ImagePrimary"`
-	ImageAdditional                  string `csv:"ImageAdditional"`
-	ProductLink                      string `csv:"ProductLink"`
-	GrossWeight                      string `csv:"GrossWeight"`
-	NetWeight                        string `csv:"NetWeight"`
-	RelatedProducts                  string `csv:"RelatedProducts"`
-	AccessoryProducts                string `csv:"AccessoryProducts"`
-	Description_1031_German          string `csv:"Description_1031_German"`
-	CategoryName_1031_German         string `csv:"CategoryName_1031_German"`
-	CategoryPath_1031_German         string `csv:"CategoryPath_1031_German"`
-	WarrantyDescription_1031_German  string `csv:"WarrantyDescription_1031_German"`
-	Description_1033_English         string `csv:"Description_1033_English"`
-	CategoryName_1033_English        string `csv:"CategoryName_1033_English"`
-	CategoryPath_1033_English        string `csv:"CategoryPath_1033_English"`
-	WarrantyDescription_1033_English string `csv:"WarrantyDescription_1033_English"`
-	Description_1036_French          string `csv:"Description_1036_French"`
-	CategoryName_1036_French         string `csv:"CategoryName_1036_French"`
-	CategoryPath_1036_French         string `csv:"CategoryPath_1036_French"`
-	WarrantyDescription_1036_French  string `csv:"WarrantyDescription_1036_French"`
-	Description_1043_Dutch           string `csv:"Description_1043_Dutch"`
-	CategoryName_1043_Dutch          string `csv:"CategoryName_1043_Dutch"`
-	CategoryPath_1043_Dutch          string `csv:"CategoryPath_1043_Dutch"`
-	WarrantyDescription_1043_Dutch   string `csv:"WarrantyDescription_1043_Dutch"`
-	ProductDisplayType               string `csv:"ProductDisplayType"`
-	LicenseTypeCode                  string `csv:"LicenseTypeCode"`
-	LicenseTypeDescription           string `csv:"LicenseTypeDescription"`
+	ProductId                        string `csv:"ProductId,omitempty"`
+	ReferenceNo                      string `csv:"ReferenceNo,omitempty"`
+	EAN                              string `csv:"EAN,omitempty"`
+	Manufacturer                     string `csv:"Manufacturer,omitempty"`
+	Price_B2B_Regular                string `csv:"Price_B2B_Regular,omitempty"`
+	Price_B2B_Discounted             string `csv:"Price_B2B_Discounted,omitempty"`
+	Price_B2B_DiscountPercent        string `csv:"Price_B2B_DiscountPercent,omitempty"`
+	Price_B2B_DiscountAmount         string `csv:"Price_B2B_DiscountAmount,omitempty"`
+	Price_B2C_exclVAT                string `csv:"Price_B2C_exclVAT,omitempty"`
+	Price_B2C_inclVAT                string `csv:"Price_B2C_inclVAT,omitempty"`
+	Price_B2C_VATRate                string `csv:"Price_B2C_VATRate,omitempty"`
+	Price_B2C_VATCountry             string `csv:"Price_B2C_VATCountry,omitempty"`
+	Price_B2X_Currency               string `csv:"Price_B2X_Currency,omitempty"`
+	Stock                            int64  `csv:"Stock,omitempty"`
+	StockNextDelivery                string `csv:"StockNextDelivery,omitempty"`
+	StockNextDeliveryAccessVolume    string `csv:"StockNextDeliveryAccessVolume,omitempty"`
+	WarrantyCode                     string `csv:"WarrantyCode,omitempty"`
+	EOL                              string `csv:"EOL,omitempty"`
+	Promotion                        string `csv:"Promotion,omitempty"`
+	NonReturnable                    string `csv:"NonReturnable,omitempty"`
+	RemainingStock                   string `csv:"RemainingStock,omitempty"`
+	ImagePrimary                     string `csv:"ImagePrimary,omitempty"`
+	ImageAdditional                  string `csv:"ImageAdditional,omitempty"`
+	ProductLink                      string `csv:"ProductLink,omitempty"`
+	GrossWeight                      string `csv:"GrossWeight,omitempty"`
+	NetWeight                        string `csv:"NetWeight,omitempty"`
+	RelatedProducts                  string `csv:"RelatedProducts,omitempty"`
+	AccessoryProducts                string `csv:"AccessoryProducts,omitempty"`
+	Description_1031_German          string `csv:"Description_1031_German,omitempty"`
+	CategoryName_1031_German         string `csv:"CategoryName_1031_German,omitempty"`
+	CategoryPath_1031_German         string `csv:"CategoryPath_1031_German,omitempty"`
+	WarrantyDescription_1031_German  string `csv:"WarrantyDescription_1031_German,omitempty"`
+	Description_1033_English         string `csv:"Description_1033_English,omitempty"`
+	CategoryName_1033_English        string `csv:"CategoryName_1033_English,omitempty"`
+	CategoryPath_1033_English        string `csv:"CategoryPath_1033_English,omitempty"`
+	WarrantyDescription_1033_English string `csv:"WarrantyDescription_1033_English,omitempty"`
+	Description_1036_French          string `csv:"Description_1036_French,omitempty"`
+	CategoryName_1036_French         string `csv:"CategoryName_1036_French,omitempty"`
+	CategoryPath_1036_French         string `csv:"CategoryPath_1036_French,omitempty"`
+	WarrantyDescription_1036_French  string `csv:"WarrantyDescription_1036_French,omitempty"`
+	Description_1043_Dutch           string `csv:"Description_1043_Dutch,omitempty"`
+	CategoryName_1043_Dutch          string `csv:"CategoryName_1043_Dutch,omitempty"`
+	CategoryPath_1043_Dutch          string `csv:"CategoryPath_1043_Dutch,omitempty"`
+	WarrantyDescription_1043_Dutch   string `csv:"WarrantyDescription_1043_Dutch,omitempty"`
+	ProductDisplayType               string `csv:"ProductDisplayType,omitempty"`
+	LicenseTypeCode                  string `csv:"LicenseTypeCode,omitempty"`
+	LicenseTypeDescription           string `csv:"LicenseTypeDescription,omitempty"`
 }
 
 type Content struct {
-	ProductId                    string `csv:"ProductId"`
-	PrintText_1031_German        string `csv:"PrintText_1031_German"`
-	PrintText_1033_English       string `csv:"PrintText_1033_English"`
-	PrintText_1036_French        string `csv:"PrintText_1036_French"`
-	PrintText_1043_Dutch         string `csv:"PrintText_1043_Dutch"`
-	LongDescription_1031_German  string `csv:"LongDescription_1031_German"`
-	LongDescription_1033_English string `csv:"LongDescription_1033_English"`
-	LongDescription_1036_French  string `csv:"LongDescription_1036_French"`
-	LongDescription_1043_Dutch   string `csv:"LongDescription_1043_Dutch"`
+	ProductId                    string `csv:"ProductId,omitempty"`
+	PrintText_1031_German        string `csv:"PrintText_1031_German,omitempty"`
+	PrintText_1033_English       string `csv:"PrintText_1033_English,omitempty"`
+	PrintText_1036_French        string `csv:"PrintText_1036_French,omitempty"`
+	PrintText_1043_Dutch         string `csv:"PrintText_1043_Dutch,omitempty"`
+	LongDescription_1031_German  string `csv:"LongDescription_1031_German,omitempty"`
+	LongDescription_1033_English string `csv:"LongDescription_1033_English,omitempty"`
+	LongDescription_1036_French  string `csv:"LongDescription_1036_French,omitempty"`
+	LongDescription_1043_Dutch   string `csv:"LongDescription_1043_Dutch,omitempty"`
 }
 
 func ReadFile(path1 string, path2 string, conf config.Config) ([]shopware.Artikel, error) {
@@ -117,6 +117,7 @@ func sort_products(catalog []ProductCatalog, content []Content, conf config.Conf
 			a := shopware.Artikel{}
 			a.Artikelnummer = fmt.Sprintf("W%s", strings.TrimSpace(item.ProductId))
 			a.Hersteller = "WORTMANN AG"
+			a.Name = item.Description_1031_German
 			a.Ean = strings.TrimSpace(item.EAN)
 			priceF, err := strconv.ParseFloat(strings.TrimSpace(item.Price_B2C_inclVAT), 64)
 			if err != nil {
@@ -124,11 +125,7 @@ func sort_products(catalog []ProductCatalog, content []Content, conf config.Conf
 				stop = true
 			}
 			a.Vk = priceF
-			bestand, err := strconv.Atoi(strings.TrimSpace(item.Stock))
-			if err != nil {
-				bestand = 0
-			}
-			a.Bestand = bestand
+			a.Bestand = item.Stock
 			bilder := strings.TrimSpace(item.ImagePrimary)
 			if len(strings.TrimSpace(item.ImageAdditional)) > 1 {
 				bilder = fmt.Sprintf("%s|%s", bilder, strings.TrimSpace(item.ImageAdditional))
@@ -159,7 +156,7 @@ func check_cat(kat string) string {
 	case "PC":
 		return "Marken PCs"
 	case "LCD":
-		return "MMonitore"
+		return "Monitore"
 	case "Dockingstations":
 		return "Zubehör Notebooks"
 	case "PC- & NetzwerkkamerasC":

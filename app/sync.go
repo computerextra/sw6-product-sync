@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"strings"
 	"time"
+
+	"slices"
 
 	"github.com/computerextra/sw6-product-sync/shopware"
 	sdk "github.com/friendsofshopware/go-shopware-admin-api-sdk"
 )
 
-const MAXUPLOADS = 1000
+const MAXUPLOADS = 2000
 
 func (a App) SynHersteller(Hersteller []string) error {
 	apiContext := sdk.NewApiContext(a.ctx)
@@ -104,22 +107,22 @@ func (a App) syncProductCategories(neue, alte []shopware.Artikel) error {
 		}
 		if !ignored {
 			for _, override := range a.config.Override {
-				if item.Kategorie1 == override.AlterName && override.Index == 1 {
+				if item.Kategorie1 == override.AlterName {
 					item.Kategorie1 = override.NeuerName
 				}
-				if len(item.Kategorie2) > 0 && item.Kategorie2 == override.AlterName && override.Index == 2 {
+				if len(item.Kategorie2) > 0 && item.Kategorie2 == override.AlterName {
 					item.Kategorie2 = override.NeuerName
 				}
-				if len(item.Kategorie3) > 0 && item.Kategorie3 == override.AlterName && override.Index == 3 {
+				if len(item.Kategorie3) > 0 && item.Kategorie3 == override.AlterName {
 					item.Kategorie3 = override.NeuerName
 				}
-				if len(item.Kategorie4) > 0 && item.Kategorie4 == override.AlterName && override.Index == 4 {
+				if len(item.Kategorie4) > 0 && item.Kategorie4 == override.AlterName {
 					item.Kategorie4 = override.NeuerName
 				}
-				if len(item.Kategorie5) > 0 && item.Kategorie5 == override.AlterName && override.Index == 5 {
+				if len(item.Kategorie5) > 0 && item.Kategorie5 == override.AlterName {
 					item.Kategorie5 = override.NeuerName
 				}
-				if len(item.Kategorie6) > 0 && item.Kategorie6 == override.AlterName && override.Index == 6 {
+				if len(item.Kategorie6) > 0 && item.Kategorie6 == override.AlterName {
 					item.Kategorie6 = override.NeuerName
 				}
 			}
@@ -268,33 +271,99 @@ func (a App) generateChildren(child, parent string) (sdk.Category, error) {
 	return sdk.Category{}, fmt.Errorf("parent or child is empty")
 }
 
+func contains(s []shopware.Artikel, e shopware.Artikel) bool {
+	for _, a := range s {
+		if a.Artikelnummer == e.Artikelnummer {
+			return true
+		}
+	}
+	return false
+}
+func remove_duplicates(arr []shopware.Artikel) []shopware.Artikel {
+	list := []shopware.Artikel{}
+	for _, item := range arr {
+		if !contains(list, item) {
+			list = append(list, item)
+		}
+	}
+
+	return list
+}
+
+func (a App) check_if_ignored(item shopware.Artikel) bool {
+	for _, x := range a.config.Ignore.Kategorien {
+		if item.Kategorie1 == x {
+			return true
+		}
+		if item.Kategorie2 == x {
+			return true
+		}
+		if item.Kategorie3 == x {
+			return true
+		}
+		if item.Kategorie4 == x {
+			return true
+		}
+		if item.Kategorie5 == x {
+			return true
+		}
+		if item.Kategorie6 == x {
+			return true
+		}
+	}
+	return slices.Contains(a.config.Ignore.Produkte, item.Artikelnummer)
+}
+
+func (a App) check_category(kategorie string) string {
+	for _, x := range a.config.Override {
+		if strings.TrimSpace(kategorie) == strings.TrimSpace(x.AlterName) {
+			return x.NeuerName
+		}
+	}
+	return kategorie
+}
+
+func (a App) send_product_payload(payloads []ProductPayload) error {
+	apiContext := sdk.NewApiContext(a.ctx)
+	_, err = a.client.Bulk.Sync(apiContext, map[string]sdk.SyncOperation{"create-product": {
+		Entity:  "product",
+		Action:  "upsert",
+		Payload: payloads,
+	}})
+	if err != nil {
+		a.logger.Error(
+			"failed to sync products",
+			slog.Any("error", err),
+		)
+		return err
+	}
+	return nil
+}
+
 func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
 	artikel := []shopware.Artikel{}
 	artikel = append(artikel, neu[:]...)
-	artikel = append(artikel, alt[:]...)
+	// artikel = append(artikel, alt[:]...)
+	a.logger.Info("items to be processed:", slog.Any("no. of items", len(artikel)))
+	artikel = remove_duplicates(artikel)
+	a.logger.Info("items to be processed after removing duplicates:", slog.Any("no. of items", len(artikel)))
 
 	var payloads []ProductPayload
 
 	count := 0
 	for _, item := range artikel {
 		if count >= MAXUPLOADS {
-			apiContext := sdk.NewApiContext(a.ctx)
-			_, err = a.client.Bulk.Sync(apiContext, map[string]sdk.SyncOperation{"create-product": {
-				Entity:  "product",
-				Action:  "upsert",
-				Payload: payloads,
-			}})
-			if err != nil {
-				a.logger.Error(
-					"failed to create new products",
-					slog.Any("error", err),
-				)
+			if err := a.send_product_payload(payloads); err != nil {
 				return err
 			}
 			count = 0
 			payloads = []ProductPayload{}
 			time.Sleep(5 * time.Second)
 		}
+
+		// Check if ignored
+		skip := a.check_if_ignored(item)
+
 		count = count + 1
 		id, err := a.Uuid(item.Artikelnummer)
 		if err != nil {
@@ -302,7 +371,9 @@ func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
 			continue
 		}
 
-		Kategorie := findCategory(item)
+		var Kategorie string
+		Kategorie = findCategory(item)
+		Kategorie = a.check_category(Kategorie)
 
 		catId, err := a.Uuid(Kategorie)
 		if err != nil {
@@ -312,9 +383,11 @@ func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
 
 		vkBrutto, vkNetto := a.calculate_price(item.Ek, Kategorie, 1)
 
-		var Aktiv bool
+		var Aktiv bool = false
+		var Bestand int64 = 0
 
 		if item.Bestand > 0 {
+			Bestand = item.Bestand
 			Aktiv = true
 		} else {
 			Aktiv = false
@@ -325,62 +398,193 @@ func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
 			a.logger.Error("failed to create uuid", slog.Any("error", err), slog.Any("item", item))
 			continue
 		}
+		if len(item.Ean) == 0 {
+			item.Ean = "0000000000000000"
+		}
 
-		payloads = append(payloads, ProductPayload{
-			Id:    id,
-			TaxId: a.env.TAX_ID,
-			Price: []Price{
-				{
-					CurrencyId:      a.env.CURRENCY_ID,
-					Net:             vkNetto,
-					Gross:           vkBrutto,
-					Linked:          true,
-					ListPrice:       nil,
-					Percentage:      nil,
-					RegulationPrice: nil,
-					Extensions:      []any{nil},
-					ApiAlias:        "price",
+		if strings.HasPrefix(item.Artikelnummer, "W") {
+			if len(item.HerstellerNummer) == 0 {
+				item.HerstellerNummer = strings.TrimPrefix(item.Artikelnummer, "W")
+			}
+
+			if len(item.Beschreibung) == 0 {
+				item.Beschreibung = "<br>"
+			}
+		}
+
+		if len(item.HerstellerNummer) == 0 {
+			item.HerstellerNummer = "n/a"
+		}
+
+		// Check everything (Nothing should be empty)
+
+		if len(id) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "id"),
+			)
+			skip = true
+		}
+		if len(a.env.TAX_ID) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "a.env.TAX_ID"),
+			)
+			skip = true
+		}
+		if len(a.env.CURRENCY_ID) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "a.env.CURRENCY_ID"),
+			)
+			skip = true
+		}
+		if vkNetto < 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "vkNetto"),
+			)
+			skip = true
+		}
+		if vkBrutto < 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "vkBrutto"),
+			)
+			skip = true
+		}
+		if len(item.Artikelnummer) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "item.Artikelnummer"),
+			)
+			skip = true
+		}
+		if item.Bestand < 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "item.Bestand"),
+			)
+			skip = true
+		}
+		if len(item.Name) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "item.Name"),
+			)
+			skip = true
+		}
+		if len(herstellerId) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "herstellerId"),
+			)
+			skip = true
+		}
+		if len(catId) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "catId"),
+			)
+			skip = true
+		}
+		if len(item.HerstellerNummer) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "item.HerstellerNummer"),
+			)
+			skip = true
+		}
+		if len(a.env.SALES_CHANNEL_ID) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "a.env.SALES_CHANNEL_ID"),
+			)
+			skip = true
+		}
+		if len(item.Beschreibung) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "item.Beschreibung"),
+			)
+			skip = true
+		}
+		if len(item.Ean) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "item.Ean"),
+			)
+			skip = true
+		}
+		if len(a.env.LIEFERZEIT_ID) == 0 {
+			a.logger.Warn(
+				"skip product",
+				slog.Any("product number", item.Artikelnummer),
+				slog.Any("empty", "a.env.LIEFERZEIT_ID"),
+			)
+			skip = true
+		}
+		if !skip {
+			payloads = append(payloads, ProductPayload{
+				Id:    id,
+				TaxId: a.env.TAX_ID,
+				Price: []Price{
+					{
+						CurrencyId:      a.env.CURRENCY_ID,
+						Net:             vkNetto,
+						Gross:           vkBrutto,
+						Linked:          true,
+						ListPrice:       nil,
+						Percentage:      nil,
+						RegulationPrice: nil,
+						Extensions:      []any{nil},
+						ApiAlias:        "price",
+					},
 				},
-			},
-			ProductNumber: item.Artikelnummer,
-			Stock:         int64(item.Bestand),
-			Name:          item.Name,
-			Manufacturer: ProductManufacturer{
-				Id: herstellerId,
-			},
-			Categories: []ProductCategoryPayload{
-				{
-					Id: catId,
+				ProductNumber: item.Artikelnummer,
+				Stock:         Bestand,
+				Name:          item.Name,
+				Manufacturer: ProductManufacturer{
+					Id: herstellerId,
 				},
-			},
-			ManufacturerNumber: item.HerstellerNummer,
-			Visibilities: []ProductVisibility{
-				{
-					SalesChannelId: a.env.SALES_CHANNEL_ID,
-					Visibility:     30,
+				Categories: []ProductCategoryPayload{
+					{
+						Id: catId,
+					},
 				},
+				ManufacturerNumber: item.HerstellerNummer,
+				Visibilities: []ProductVisibility{
+					{
+						SalesChannelId: a.env.SALES_CHANNEL_ID,
+						Visibility:     30,
+					},
+				},
+				Description:    item.Beschreibung,
+				Active:         Aktiv,
+				Ean:            item.Ean,
+				ShippingFree:   false,
+				DeliveryTimeId: a.env.LIEFERZEIT_ID,
 			},
-			Description:    item.Beschreibung,
-			Active:         Aktiv,
-			Ean:            item.Ean,
-			ShippingFree:   false,
-			DeliveryTimeId: a.env.LIEFERZEIT_ID,
-		},
-		)
+			)
+		}
 	}
 
 	if len(payloads) > 0 {
-		apiContext := sdk.NewApiContext(a.ctx)
-		_, err = a.client.Bulk.Sync(apiContext, map[string]sdk.SyncOperation{"create-product": {
-			Entity:  "product",
-			Action:  "upsert",
-			Payload: payloads,
-		}})
-		if err != nil {
-			a.logger.Error(
-				"failed to create new products",
-				slog.Any("error", err),
-			)
+		if err := a.send_product_payload(payloads); err != nil {
 			return err
 		}
 	}
@@ -390,62 +594,65 @@ func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
 }
 
 type ProductPayload struct {
-	Id                 string                   `json:"id"`
-	TaxId              string                   `json:"taxId"`
-	Price              []Price                  `json:"price"`
-	ProductNumber      string                   `json:"productNumber"`
+	Id                 string                   `json:"id,omitempty"`
+	TaxId              string                   `json:"taxId,omitempty"`
+	Price              []Price                  `json:"price,omitempty"`
+	ProductNumber      string                   `json:"productNumber,omitempty"`
 	Stock              int64                    `json:"stock"`
-	Name               string                   `json:"name"`
-	Categories         []ProductCategoryPayload `json:"categories"`
-	Manufacturer       ProductManufacturer      `json:"manufacturer"`
+	Name               string                   `json:"name,omitempty"`
+	Categories         []ProductCategoryPayload `json:"categories,omitempty"`
+	Manufacturer       ProductManufacturer      `json:"manufacturer,omitempty"`
 	ManufacturerNumber string                   `json:"manufacturerNumber,omitempty"`
-	Visibilities       []ProductVisibility      `json:"visibilities"`
-	Description        string                   `json:"description"`
+	Visibilities       []ProductVisibility      `json:"visibilities,omitempty"`
+	Description        string                   `json:"description,omitempty"`
 	Active             bool                     `json:"active"`
 	Ean                string                   `json:"ean,omitempty"`
 	ShippingFree       bool                     `json:"shippingFree"`
-	DeliveryTimeId     string                   `json:"deliveryTimeId"`
+	DeliveryTimeId     string                   `json:"deliveryTimeId,omitempty"`
 }
 
 type ProductVisibility struct {
-	SalesChannelId string `json:"salesChannelId"`
-	Visibility     int    `json:"visibility"`
+	SalesChannelId string `json:"salesChannelId,omitempty"`
+	Visibility     int    `json:"visibility,omitempty"`
 }
 
 type ProductManufacturer struct {
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 }
 
 type ProductCategoryPayload struct {
-	Id string `json:"id"`
+	Id string `json:"id,omitempty"`
 }
 
 type Price struct {
-	CurrencyId      string        `json:"currencyId"`
-	Net             float64       `json:"net"`
-	Gross           float64       `json:"gross"`
-	Linked          bool          `json:"linked"`
-	ListPrice       interface{}   `json:"listPrice,omitempty"`
-	Percentage      interface{}   `json:"percentage,omitempty"`
-	RegulationPrice interface{}   `json:"regulationPrice,omitempty"`
-	Extensions      []interface{} `json:"extensions,omitempty"`
-	ApiAlias        string        `json:"apiAlias"`
+	CurrencyId      string  `json:"currencyId,omitempty"`
+	Net             float64 `json:"net,omitempty"`
+	Gross           float64 `json:"gross,omitempty"`
+	Linked          bool    `json:"linked,omitempty"`
+	ListPrice       any     `json:"listPrice,omitempty"`
+	Percentage      any     `json:"percentage,omitempty"`
+	RegulationPrice any     `json:"regulationPrice,omitempty"`
+	Extensions      []any   `json:"extensions,omitempty"`
+	ApiAlias        string  `json:"apiAlias,omitempty"`
 }
 
 func findCategory(artikel shopware.Artikel) string {
+	var cat string
 	if len(artikel.Kategorie6) > 0 {
-		return artikel.Kategorie6
+		cat = artikel.Kategorie6
 	} else if len(artikel.Kategorie5) > 0 {
-		return artikel.Kategorie5
+		cat = artikel.Kategorie5
 	} else if len(artikel.Kategorie4) > 0 {
-		return artikel.Kategorie4
+		cat = artikel.Kategorie4
 	} else if len(artikel.Kategorie3) > 0 {
-		return artikel.Kategorie3
+		cat = artikel.Kategorie3
 	} else if len(artikel.Kategorie2) > 0 {
-		return artikel.Kategorie2
+		cat = artikel.Kategorie2
 	} else {
-		return artikel.Kategorie1
+		cat = artikel.Kategorie1
 	}
+
+	return cat
 }
 
 func (a App) calculate_price(ek float64, kategorie string, count int) (float64, float64) {

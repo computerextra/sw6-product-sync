@@ -27,7 +27,6 @@ type Config struct {
 	Override []struct {
 		AlterName string
 		NeuerName string
-		Index     int
 	}
 	Kategorien []struct {
 		Name            string

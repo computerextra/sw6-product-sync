@@ -14,38 +14,38 @@ import (
 )
 
 type KosatecProduct struct {
-	Artnr          string `csv:"artnr"`
-	Herstnr        string `csv:"herstnr"`
-	Artname        string `csv:"artname"`
-	Hersteller     string `csv:"hersteller"`
-	Hersturl       string `csv:"hersturl"`
-	Ean            string `csv:"ean"`
-	Hek            string `csv:"hek"` // decimal point: "."
-	Vkbrutto       string `csv:"vkbrutto"`
-	Verfuegbar     string `csv:"verfuegbar"`
-	Menge          string `csv:"menge"`
-	Eta            string `csv:"eta"`
-	Indate         string `csv:"indate"`
-	Gewicht        string `csv:"gewicht"`
-	Eol            string `csv:"eol"`
-	Kat1           string `csv:"kat1"`
-	Kat2           string `csv:"kat2"`
-	Kat3           string `csv:"kat3"`
-	Kat4           string `csv:"kat4"`
-	Kat5           string `csv:"kat5"`
-	Kat6           string `csv:"kat6"`
-	Title          string `csv:"title"`
-	Short_desc     string `csv:"short_desc"`
-	Short_summary  string `csv:"short_summary"`
-	Long_summary   string `csv:"long_summary"`
-	Marketing_text string `csv:"marketing_text"`
-	Specs          string `csv:"specs"`
-	Pdf            string `csv:"pdf"`
-	Pdf_manual     string `csv:"pdf_manual"`
-	Images_s       string `csv:"images_s"`  // delimiter ";"
-	Images_m       string `csv:"images_m"`  // delimiter ";"
-	Images_l       string `csv:"images_l"`  // delimiter ";"
-	Images_xl      string `csv:"images_xl"` // delimiter ";"
+	Artnr          string `csv:"artnr,omitempty"`
+	Herstnr        string `csv:"herstnr,omitempty"`
+	Artname        string `csv:"artname,omitempty"`
+	Hersteller     string `csv:"hersteller,omitempty"`
+	Hersturl       string `csv:"hersturl,omitempty"`
+	Ean            string `csv:"ean,omitempty"`
+	Hek            string `csv:"hek,omitempty"` // decimal point: "."
+	Vkbrutto       string `csv:"vkbrutto,omitempty"`
+	Verfuegbar     string `csv:"verfuegbar,omitempty"`
+	Menge          int64  `csv:"menge,omitempty"`
+	Eta            string `csv:"eta,omitempty"`
+	Indate         string `csv:"indate,omitempty"`
+	Gewicht        string `csv:"gewicht,omitempty"`
+	Eol            string `csv:"eol,omitempty"`
+	Kat1           string `csv:"kat1,omitempty"`
+	Kat2           string `csv:"kat2,omitempty"`
+	Kat3           string `csv:"kat3,omitempty"`
+	Kat4           string `csv:"kat4,omitempty"`
+	Kat5           string `csv:"kat5,omitempty"`
+	Kat6           string `csv:"kat6,omitempty"`
+	Title          string `csv:"title,omitempty"`
+	Short_desc     string `csv:"short_desc,omitempty"`
+	Short_summary  string `csv:"short_summary,omitempty"`
+	Long_summary   string `csv:"long_summary,omitempty"`
+	Marketing_text string `csv:"marketing_text,omitempty"`
+	Specs          string `csv:"specs,omitempty"`
+	Pdf            string `csv:"pdf,omitempty"`
+	Pdf_manual     string `csv:"pdf_manual,omitempty"`
+	Images_s       string `csv:"images_s,omitempty"`  // delimiter ";"
+	Images_m       string `csv:"images_m,omitempty"`  // delimiter ";"
+	Images_l       string `csv:"images_l,omitempty"`  // delimiter ";"
+	Images_xl      string `csv:"images_xl,omitempty"` // delimiter ";"
 }
 
 func ReadFile(path string, conf config.Config) ([]shopware.Artikel, error) {
@@ -82,15 +82,7 @@ func sort_products(products []KosatecProduct, conf config.Config) ([]shopware.Ar
 		if !skip(item, conf) {
 			a := shopware.Artikel{}
 			a.Artikelnummer = fmt.Sprintf("K%s", strings.TrimSpace(item.Artnr))
-			if len(item.Menge) > 1 {
-				bestand, err := strconv.Atoi(item.Menge)
-				if err != nil {
-					bestand = 0
-				}
-				a.Bestand = bestand
-			} else {
-				a.Bestand = 0
-			}
+			a.Bestand = item.Menge
 			a.HerstellerNummer = strings.TrimSpace(item.Herstnr)
 			a.Name = strings.TrimSpace(item.Artname)
 			a.Ean = strings.TrimSpace(item.Ean)
@@ -101,24 +93,24 @@ func sort_products(products []KosatecProduct, conf config.Config) ([]shopware.Ar
 				stop = true
 			}
 			if len(item.Kat1) > 1 {
-				a.Kategorie1 = check_category(item.Kat1, 1, conf)
+				a.Kategorie1 = check_category(item.Kat1, conf)
 			} else {
 				stop = true
 			}
 			if len(item.Kat2) > 1 {
-				a.Kategorie2 = check_category(item.Kat2, 2, conf)
+				a.Kategorie2 = check_category(item.Kat2, conf)
 			}
 			if len(item.Kat3) > 1 {
-				a.Kategorie3 = check_category(item.Kat3, 3, conf)
+				a.Kategorie3 = check_category(item.Kat3, conf)
 			}
 			if len(item.Kat4) > 1 {
-				a.Kategorie4 = check_category(item.Kat4, 4, conf)
+				a.Kategorie4 = check_category(item.Kat4, conf)
 			}
 			if len(item.Kat5) > 1 {
-				a.Kategorie5 = check_category(item.Kat5, 5, conf)
+				a.Kategorie5 = check_category(item.Kat5, conf)
 			}
 			if len(item.Kat6) > 1 {
-				a.Kategorie6 = check_category(item.Kat6, 6, conf)
+				a.Kategorie6 = check_category(item.Kat6, conf)
 			}
 			ekFloat, err := strconv.ParseFloat(item.Hek, 64)
 			if err != nil {
@@ -209,13 +201,13 @@ func is_ignored(ignored []string, str string) bool {
 	return false
 }
 
-func check_category(cat string, idx int, conf config.Config) string {
+func check_category(cat string, conf config.Config) string {
 	strippped := strings.TrimSpace(cat)
-	if len(conf.Override) < 1 {
+	if len(conf.Override) == 0 {
 		return strippped
 	}
 	for _, x := range conf.Override {
-		if strippped == x.AlterName && idx == x.Index {
+		if strippped == x.AlterName {
 			return x.NeuerName
 		}
 	}

@@ -89,51 +89,50 @@ Kategorien = [
 # Liste von Artikelnummern, die nicht importiert werden sollen
 Produkte = []
 
-# Überschreibt Kategorien in den Listen mit dem angegebenen Index (Index = 1 => Erste Kategorie, Index = 2 => zweite Kategorie, etc. Max. Index: 6)
+# Überschreibt Kategorien in den Listen 
 [[Override]]
 AlterName = "Netzwerk"
 NeuerName = "Networking"
-Index = 1
+
 
 [[Override]]
 AlterName = "All in One PC-Systeme"
 NeuerName = "All in one Systeme"
-Index = 1
+
 
 [[Override]]
 AlterName = "Eingabe Zubehör"
 NeuerName = "Eingabegeräte"
-Index = 1
+
 
 [[Override]]
 AlterName = "Tastaturen"
 NeuerName = "Eingabegeräte"
-Index = 1
+
 
 [[Override]]
 AlterName = "Mäuse"
 NeuerName = "Eingabegeräte"
-Index = 1
+
 
 [[Override]]
 AlterName = "Modems"
 NeuerName = "Bridges & Router"
-Index = 1
+
 
 [[Override]]
 AlterName = "System- & Stromkabel"
 NeuerName = "Kabel & Adapter"
-Index = 1
+
 
 [[Override]]
 AlterName = "Netzteile & USVs"
 NeuerName = "Netzteile"
-Index = 1
+
 
 [[Override]]
 AlterName = "Notebooks & Zubehör"
 NeuerName = "Notebooks"
-Index = 1
 
 
 # Legt die nachfolgenden Kategorien als Hauptmenü fest, es ist auch möglich Unterkategorien zu erstellen.

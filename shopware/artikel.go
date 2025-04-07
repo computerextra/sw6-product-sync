@@ -2,7 +2,7 @@ package shopware
 
 type Artikel struct {
 	Artikelnummer    string
-	Bestand          int
+	Bestand          int64
 	HerstellerNummer string
 	Name             string
 	Ean              string

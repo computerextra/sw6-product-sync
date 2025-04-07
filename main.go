@@ -24,7 +24,7 @@ func main() {
 	logger := slog.New(
 		NewCopyHandler(
 			slog.NewJSONHandler(os.Stdout, nil),
-			slog.NewTextHandler(f, nil),
+			slog.NewJSONHandler(f, nil),
 		),
 	)
 
@@ -35,6 +35,7 @@ func main() {
 		logger.Error("failed to create app", slog.Any("error", err))
 		stop = true
 	}
+
 	// if !stop {
 	// 	err = App.Download()
 	// 	if err != nil {
@@ -69,26 +70,26 @@ func main() {
 		slog.Any("hersteller", len(Hersteller)),
 	)
 
-	if !stop {
-		err = App.SynHersteller(Hersteller)
-		if err != nil {
-			logger.Error("failed to sync manufacturer", slog.Any("error", err))
-			stop = true
-		}
-	}
+	// if !stop {
+	// 	err = App.SynHersteller(Hersteller)
+	// 	if err != nil {
+	// 		logger.Error("failed to sync manufacturer", slog.Any("error", err))
+	// 		stop = true
+	// 	}
+	// }
 
-	if !stop {
-		err = App.SyncCategories(NeueArtikel, AlteArtikel)
-		if err != nil {
-			logger.Error("failed to sync categories", slog.Any("error", err))
-			stop = true
-		}
-	}
+	// if !stop {
+	// 	err = App.SyncCategories(NeueArtikel, AlteArtikel)
+	// 	if err != nil {
+	// 		logger.Error("failed to sync categories", slog.Any("error", err))
+	// 		stop = true
+	// 	}
+	// }
 
 	if !stop {
 		err = App.CreateProducts(NeueArtikel, AlteArtikel)
 		if err != nil {
-			logger.Error("failed to create new Products", slog.Any("error", err))
+			logger.Error("failed to sync Products", slog.Any("error", err))
 			stop = true
 		}
 	}
