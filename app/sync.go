@@ -10,7 +10,7 @@ import (
 	sdk "github.com/friendsofshopware/go-shopware-admin-api-sdk"
 )
 
-const MAXUPLOADS = 500
+const MAXUPLOADS = 1000
 
 func (a App) SynHersteller(Hersteller []string) error {
 	apiContext := sdk.NewApiContext(a.ctx)
@@ -123,7 +123,8 @@ func (a App) syncProductCategories(neue, alte []shopware.Artikel) error {
 					item.Kategorie6 = override.NeuerName
 				}
 			}
-			var parentId = ""
+			item = check_dulicate_categories(item)
+			parentId := ""
 			for _, category := range a.config.Kategorien {
 				if item.Kategorie1 == category.Name {
 					parentId = a.env.MAIN_CATEGORY_ID
@@ -174,11 +175,68 @@ func (a App) syncProductCategories(neue, alte []shopware.Artikel) error {
 	if len(entity) > 0 {
 		_, err := a.client.Repository.Category.Upsert(apiContext, entity)
 		if err != nil {
-			a.logger.Error("failed to upsert categories", slog.Any("error", err))
+			a.logger.Error("failed to upsert categories", slog.Any("error", err), slog.Any("data", entity))
 			return err
 		}
 	}
 	return nil
+}
+
+func check_dulicate_categories(item shopware.Artikel) shopware.Artikel {
+	strings := [6]string{item.Kategorie1, item.Kategorie2, item.Kategorie3, item.Kategorie4, item.Kategorie5, item.Kategorie6}
+
+	res := [6]string{}
+
+	for idx, item := range strings {
+		if len(item) == 0 {
+			continue
+		}
+		dupe := false
+		idxFound := [2]int{9, 9}
+		for idx2, c := range strings {
+			if idx != idx2 && item == c {
+				dupe = true
+				idxFound[0] = idx
+				idxFound[1] = idx2
+				break
+			}
+		}
+		if dupe {
+			if idxFound[0] < idxFound[1] {
+				strings[idxFound[1]] = ""
+			} else {
+				strings[idxFound[0]] = ""
+			}
+		}
+		res[idx] = strings[idx]
+	}
+
+	item.Kategorie1 = res[0]
+	item.Kategorie2 = res[1]
+	item.Kategorie3 = res[2]
+	item.Kategorie4 = res[3]
+	item.Kategorie5 = res[4]
+	item.Kategorie6 = res[5]
+
+	if len(item.Kategorie5) == 0 {
+		item.Kategorie6 = ""
+	}
+	if len(item.Kategorie4) == 0 {
+		item.Kategorie6 = ""
+		item.Kategorie5 = ""
+	}
+	if len(item.Kategorie3) == 0 {
+		item.Kategorie6 = ""
+		item.Kategorie5 = ""
+		item.Kategorie3 = ""
+	}
+	if len(item.Kategorie2) == 0 {
+		item.Kategorie6 = ""
+		item.Kategorie5 = ""
+		item.Kategorie4 = ""
+		item.Kategorie3 = ""
+	}
+	return item
 }
 
 func (a App) categoryHelper(name string, parentId string) (sdk.Category, error) {
@@ -210,183 +268,168 @@ func (a App) generateChildren(child, parent string) (sdk.Category, error) {
 	return sdk.Category{}, fmt.Errorf("parent or child is empty")
 }
 
-func (a App) UpdateProducts(artikel []shopware.Artikel) error {
-	var count = 0
-	var entity []sdk.Product
-	tax, err := a.get_tag_rate()
-	if err != nil {
-		a.logger.Error("failed to get tax rate", slog.Any("error", err))
-		return err
-	}
+func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
+	artikel := []shopware.Artikel{}
+	artikel = append(artikel, neu[:]...)
+	artikel = append(artikel, alt[:]...)
+
+	var payloads []ProductPayload
+
+	count := 0
 	for _, item := range artikel {
 		if count >= MAXUPLOADS {
 			apiContext := sdk.NewApiContext(a.ctx)
-			_, err := a.client.Repository.Product.Upsert(apiContext, entity)
+			_, err = a.client.Bulk.Sync(apiContext, map[string]sdk.SyncOperation{"create-product": {
+				Entity:  "product",
+				Action:  "upsert",
+				Payload: payloads,
+			}})
 			if err != nil {
-				a.logger.Error("failed to upsert products", slog.Any("error", err))
+				a.logger.Error(
+					"failed to create new products",
+					slog.Any("error", err),
+				)
 				return err
 			}
 			count = 0
-			entity = []sdk.Product{}
+			payloads = []ProductPayload{}
+			time.Sleep(5 * time.Second)
 		}
 		count = count + 1
-		Kategorie := findCategory(item)
-		var vkBrutto float64 = 0
-		var vkNetto float64 = 0
-		var skip = false
-		for _, uvp := range a.config.UVP {
-			if item.Artikelnummer == uvp.Artikelnummer {
-				vkBrutto = uvp.Brutto
-				vkNetto = uvp.Netto
-				skip = true
-				break
-			}
-		}
-		if !skip {
-			if item.Ek > 0 {
-				vkBrutto, vkNetto, err = a.calculate_price(item.Ek, Kategorie)
-				if err != nil {
-					a.logger.Error("failed to calculate price", slog.Any("error", err))
-					return err
-				}
-			}
-			if item.Vk > 0 {
-				vkBrutto = item.Vk
-				vkNetto = vkBrutto / tax
-			}
-		}
-		var Aktiv bool
-		if item.Bestand > 0 {
-			Aktiv = true
-		} else {
-			Aktiv = false
-		}
-		id, err := a.Uuid(item.Artikelnummer)
-		if err != nil {
-			a.logger.Error("failed to create uuid", slog.Any("error", err))
-			continue
-		}
-
-		entity = append(entity, sdk.Product{
-			Id:             id,
-			DeliveryTimeId: a.env.LIEFERZEIT_ID,
-			Stock:          float64(item.Bestand),
-			Active:         Aktiv,
-			Name:           item.Name,
-			TaxId:          a.env.TAX_ID,
-			ProductNumber:  item.Artikelnummer,
-			Ean:            item.Ean,
-			Price: Price{
-				CurrencyId: a.env.CURRENCY_ID,
-				Net:        vkNetto,
-				Gross:      vkBrutto,
-				Linked:     true,
-				ApiAlias:   "price",
-			},
-		})
-	}
-
-	if len(entity) > 0 {
-		apiContext := sdk.NewApiContext(a.ctx)
-		_, err := a.client.Repository.Product.Upsert(apiContext, entity)
-		if err != nil {
-			a.logger.Error("failed to upsert products", slog.Any("error", err))
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (a App) CreateProducts(artikel []shopware.Artikel) error {
-	count := 1
-	for _, item := range artikel {
-		fmt.Printf("Artikel %v von %v wird angelegt", count, len(artikel))
-		count = count + 1
-		// TODO: DEBUG!!!
-		if count == 10 {
-			break
-		}
-
 		id, err := a.Uuid(item.Artikelnummer)
 		if err != nil {
 			a.logger.Error("failed to create uuid", slog.Any("error", err), slog.Any("item", item))
 			continue
 		}
+
 		Kategorie := findCategory(item)
+
 		catId, err := a.Uuid(Kategorie)
 		if err != nil {
 			a.logger.Error("failed to create uuid", slog.Any("error", err), slog.Any("item", item))
 			continue
 		}
-		vkBrutto, vkNetto, err := a.calculate_price(item.Ek, Kategorie)
-		if err != nil {
-			a.logger.Error("failed to calculate price", slog.Any("error", err), slog.Any("item", item))
-			continue
-		}
+
+		vkBrutto, vkNetto := a.calculate_price(item.Ek, Kategorie, 1)
+
 		var Aktiv bool
+
 		if item.Bestand > 0 {
 			Aktiv = true
 		} else {
 			Aktiv = false
 		}
+
 		herstellerId, err := a.Uuid(item.Hersteller)
 		if err != nil {
 			a.logger.Error("failed to create uuid", slog.Any("error", err), slog.Any("item", item))
 			continue
 		}
 
-		apiContext := sdk.NewApiContext(a.ctx)
-		_, err = a.client.Repository.Product.Upsert(apiContext, []sdk.Product{
-			{
-				Name:  item.Name,
-				Id:    id,
-				TaxId: a.env.TAX_ID,
-				Categories: []sdk.Category{
-					{
-						Id: catId,
-					},
+		payloads = append(payloads, ProductPayload{
+			Id:    id,
+			TaxId: a.env.TAX_ID,
+			Price: []Price{
+				{
+					CurrencyId:      a.env.CURRENCY_ID,
+					Net:             vkNetto,
+					Gross:           vkBrutto,
+					Linked:          true,
+					ListPrice:       nil,
+					Percentage:      nil,
+					RegulationPrice: nil,
+					Extensions:      []any{nil},
+					ApiAlias:        "price",
 				},
-				Price: Price{
-					CurrencyId: a.env.CURRENCY_ID,
-					Net:        vkNetto,
-					Gross:      vkBrutto,
-					Linked:     true,
-					ApiAlias:   "price",
-				},
-				Visibilities: []sdk.ProductVisibility{
-					{
-						SalesChannelId: a.env.SALES_CHANNEL_ID,
-						Visibility:     30,
-					},
-				},
-				ProductNumber:      item.Artikelnummer,
-				Stock:              float64(item.Bestand),
-				Active:             Aktiv,
-				ManufacturerNumber: item.HerstellerNummer,
-				ShippingFree:       false,
-				Description:        item.Beschreibung,
-				ManufacturerId:     herstellerId,
-				DeliveryTimeId:     a.env.LIEFERZEIT_ID,
 			},
-		})
-		if err != nil {
-			a.logger.Error("failed to create new product", slog.Any("error", err), slog.Any("item", item))
-			continue
-		}
-
-		time.Sleep(5 * time.Second)
+			ProductNumber: item.Artikelnummer,
+			Stock:         int64(item.Bestand),
+			Name:          item.Name,
+			Manufacturer: ProductManufacturer{
+				Id: herstellerId,
+			},
+			Categories: []ProductCategoryPayload{
+				{
+					Id: catId,
+				},
+			},
+			ManufacturerNumber: item.HerstellerNummer,
+			Visibilities: []ProductVisibility{
+				{
+					SalesChannelId: a.env.SALES_CHANNEL_ID,
+					Visibility:     30,
+				},
+			},
+			Description:    item.Beschreibung,
+			Active:         Aktiv,
+			Ean:            item.Ean,
+			ShippingFree:   false,
+			DeliveryTimeId: a.env.LIEFERZEIT_ID,
+		},
+		)
 	}
 
+	if len(payloads) > 0 {
+		apiContext := sdk.NewApiContext(a.ctx)
+		_, err = a.client.Bulk.Sync(apiContext, map[string]sdk.SyncOperation{"create-product": {
+			Entity:  "product",
+			Action:  "upsert",
+			Payload: payloads,
+		}})
+		if err != nil {
+			a.logger.Error(
+				"failed to create new products",
+				slog.Any("error", err),
+			)
+			return err
+		}
+	}
+
+	a.logger.Info("successfully created items", slog.Any("items", len(artikel)))
 	return nil
 }
 
+type ProductPayload struct {
+	Id                 string                   `json:"id"`
+	TaxId              string                   `json:"taxId"`
+	Price              []Price                  `json:"price"`
+	ProductNumber      string                   `json:"productNumber"`
+	Stock              int64                    `json:"stock"`
+	Name               string                   `json:"name"`
+	Categories         []ProductCategoryPayload `json:"categories"`
+	Manufacturer       ProductManufacturer      `json:"manufacturer"`
+	ManufacturerNumber string                   `json:"manufacturerNumber,omitempty"`
+	Visibilities       []ProductVisibility      `json:"visibilities"`
+	Description        string                   `json:"description"`
+	Active             bool                     `json:"active"`
+	Ean                string                   `json:"ean,omitempty"`
+	ShippingFree       bool                     `json:"shippingFree"`
+	DeliveryTimeId     string                   `json:"deliveryTimeId"`
+}
+
+type ProductVisibility struct {
+	SalesChannelId string `json:"salesChannelId"`
+	Visibility     int    `json:"visibility"`
+}
+
+type ProductManufacturer struct {
+	Id string `json:"id"`
+}
+
+type ProductCategoryPayload struct {
+	Id string `json:"id"`
+}
+
 type Price struct {
-	CurrencyId string  `json:"currencyId"`
-	Net        float64 `json:"net"`
-	Gross      float64 `json:"gross"`
-	Linked     bool    `json:"linked"`
-	ApiAlias   string  `json:"apiAlias"`
+	CurrencyId      string        `json:"currencyId"`
+	Net             float64       `json:"net"`
+	Gross           float64       `json:"gross"`
+	Linked          bool          `json:"linked"`
+	ListPrice       interface{}   `json:"listPrice,omitempty"`
+	Percentage      interface{}   `json:"percentage,omitempty"`
+	RegulationPrice interface{}   `json:"regulationPrice,omitempty"`
+	Extensions      []interface{} `json:"extensions,omitempty"`
+	ApiAlias        string        `json:"apiAlias"`
 }
 
 func findCategory(artikel shopware.Artikel) string {
@@ -405,8 +448,9 @@ func findCategory(artikel shopware.Artikel) string {
 	}
 }
 
-func (a App) calculate_price(ek float64, kategorie string) (float64, float64, error) {
-	var aufschlag = a.config.Aufschlag.Prozentual
+func (a App) calculate_price(ek float64, kategorie string, count int) (float64, float64) {
+	aufschlag := a.config.Aufschlag.Prozentual
+
 	for _, cA := range a.config.Kategorie {
 		for _, c := range cA {
 			if kategorie == c.Kategorie {
@@ -415,24 +459,22 @@ func (a App) calculate_price(ek float64, kategorie string) (float64, float64, er
 			}
 		}
 	}
-	tax, err := a.get_tag_rate()
-	if err != nil {
-		return 0, 0, err
-	}
-	AufschlagProzent := (aufschlag / 100) + 1
-	price := ek * float64(AufschlagProzent)
-	taxPercent := (tax / 100) + 1
+	var AufschlagProzent float64 = float64(aufschlag)/100 + 1
+	price := ek * AufschlagProzent
+	taxPercent := (a.taxRate / 100) + 1
 	vk := price * taxPercent
 	vk = math.Round(vk/5) * 5
 	vk = vk - 0.1
 
 	if vk < 9.9 {
+
 		vk = 9.9
 	}
-	Gewinn := (vk / taxPercent) - ek
+	Gewinn := (vk / taxPercent) - (ek - (5 * (float64(count))))
+	count = count + 1
 	if Gewinn < 5 {
-		return a.calculate_price(ek+5, kategorie)
+		return a.calculate_price(ek+5, kategorie, count)
 	}
 
-	return vk, vk / tax, nil
+	return vk, vk / taxPercent
 }

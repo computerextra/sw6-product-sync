@@ -10,11 +10,12 @@ import (
 )
 
 type App struct {
-	ctx    context.Context
-	client *sdk.Client
-	env    *env.Env
-	logger *slog.Logger
-	config *config.Config
+	ctx     context.Context
+	client  *sdk.Client
+	env     *env.Env
+	logger  *slog.Logger
+	config  *config.Config
+	taxRate float64
 }
 
 func New(logger *slog.Logger) (*App, error) {
@@ -36,11 +37,29 @@ func New(logger *slog.Logger) (*App, error) {
 		return nil, err
 	}
 
+	tax, err := get_tag_rate(ctx, client, env.TAX_ID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &App{
-		ctx:    ctx,
-		client: client,
-		logger: logger,
-		env:    env,
-		config: conf,
+		ctx:     ctx,
+		client:  client,
+		logger:  logger,
+		env:     env,
+		config:  conf,
+		taxRate: tax,
 	}, nil
+}
+
+func get_tag_rate(ctx context.Context, client *sdk.Client, taxId string) (float64, error) {
+	apiContext := sdk.NewApiContext(ctx)
+	criteria := sdk.Criteria{}
+	criteria.Filter = []sdk.CriteriaFilter{{Type: "equals", Field: "id", Value: taxId}}
+	criteria.Limit = 1
+	collection, _, err := client.Repository.Tax.SearchAll(apiContext, criteria)
+	if err != nil {
+		return 0, err
+	}
+	return collection.Data[0].TaxRate, nil
 }

@@ -78,9 +78,6 @@ func main() {
 	}
 
 	if !stop {
-		// BUG: {"time":"2025-04-04T12:32:00.0971842+02:00","level":"ERROR","msg":"failed to upsert categories","error":"API request failed, got http code 400 with content: The category entity with id \"024000c0afc25f68aabb1380233db4a7\" can not reference to itself as parent."}
-		// BUG: {"time":"2025-04-04T12:32:00.0971842+02:00","level":"ERROR","msg":"failed to sync product categories","error":"API request failed, got http code 400 with content: The category entity with id \"024000c0afc25f68aabb1380233db4a7\" can not reference to itself as parent."}
-		// BUG: {"time":"2025-04-04T12:32:00.0971842+02:00","level":"ERROR","msg":"failed to sync categories","error":"API request failed, got http code 400 with content: The category entity with id \"024000c0afc25f68aabb1380233db4a7\" can not reference to itself as parent."}
 		err = App.SyncCategories(NeueArtikel, AlteArtikel)
 		if err != nil {
 			logger.Error("failed to sync categories", slog.Any("error", err))
@@ -89,15 +86,7 @@ func main() {
 	}
 
 	if !stop {
-		err = App.UpdateProducts(AlteArtikel)
-		if err != nil {
-			logger.Error("failed to update Products", slog.Any("error", err))
-			stop = true
-		}
-	}
-
-	if !stop {
-		err = App.CreateProducts(NeueArtikel)
+		err = App.CreateProducts(NeueArtikel, AlteArtikel)
 		if err != nil {
 			logger.Error("failed to create new Products", slog.Any("error", err))
 			stop = true
