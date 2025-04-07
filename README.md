@@ -50,18 +50,21 @@ Die Datei `?.exe` ausführen.
 - [x] Neue Liste für "Neue Artikel" erstellen
 - [x] Neue Liste für "Alte Artikel" erstellen
 - [x] Neue Liste für "EOL Artikel" erstellen
-- [ ] "Neue Artikel" im Shop anlegen
-- [ ] "Alte Artikel" im Shop anpassen
-- [ ] "EOL Artikel" im Shop löschen
-- [ ] Preis berechnung mit EK vom Händer mit Standard Aufschlag aus .env
+- [x] "Neue Artikel" im Shop anlegen
+- [x] "Alte Artikel" im Shop anpassen
+- [x] Preis berechnung mit EK vom Händer mit Standard Aufschlag aus .env
 - [x] Artikel "blacklisten" nach Config File
-- [ ] Preis berechnung mit besonderem Aufschlag mit Config json? Datei
-  - [ ] besonderer Aufschlag als Prozent
-  - [ ] besonderer Aufschlag als Absolut
-  - [ ] besonderer Aufschlag nach Artikel Kategorie
-  - [ ] besonderer Aufschlag nach Artikelnummer (bsp: AVM UVP Liste)
-- [ ] Anlegen von Herstellern
-- [ ] Anlegen und Pflegen von Kategorien
+- [x] Preis berechnung mit besonderem Aufschlag mit Config json? Datei
+  - [x] besonderer Aufschlag als Prozent
+  - [x] besonderer Aufschlag als Absolut
+  - [x] besonderer Aufschlag nach Artikel Kategorie
+  - [x] besonderer Aufschlag nach Artikelnummer (bsp: AVM UVP Liste)
+- [x] Anlegen von Herstellern
+- [x] Anlegen und Pflegen von Kategorien
   - [x] Standard Kategorien nach Config Datei
+- [x] Nicht lieferbare Artikel im Shop ausblenden
 - [ ] Support für Intos Artikellisten einbauen
-- [ ] Nicht lieferbare Artikel im Shop ausblenden
+- [ ] Bilder hochladen
+- [ ] Bilder zu Produkten hinzufügen
+- [ ] Produkt Cover setzen
+- [ ] "EOL Artikel" im Shop löschen
