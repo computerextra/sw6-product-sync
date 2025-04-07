@@ -31,7 +31,7 @@ func New(logger *slog.Logger) (*App, error) {
 		return nil, err
 	}
 
-	creds := sdk.NewPasswordCredentials(env.SW6_ADMIN_USERNAME, env.SW6_ADMIN_PASSWORD, []string{})
+	creds := sdk.NewIntegrationCredentials(env.SW6_ADMIN_CLIENT_ID, env.SW6_ADMIN_CLIENT_SECRET, []string{})
 	client, err := sdk.NewApiClient(ctx, env.BASE_URL, creds, nil)
 	if err != nil {
 		return nil, err

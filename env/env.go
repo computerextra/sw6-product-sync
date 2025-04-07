@@ -6,8 +6,8 @@ import (
 )
 
 type Env struct {
-	SW6_ADMIN_USERNAME           string `env:"SW6_ADMIN_USERNAME,required"`
-	SW6_ADMIN_PASSWORD           string `env:"SW6_ADMIN_PASSWORD,required"`
+	SW6_ADMIN_CLIENT_ID          string `env:"SW6_ADMIN_CLIENT_ID,required"`
+	SW6_ADMIN_CLIENT_SECRET      string `env:"SW6_ADMIN_CLIENT_SECRET,required"`
 	BASE_URL                     string `env:"BASE_URL,required"`
 	KOSATEC_URL                  string `env:"KOSATEC_URL,required"`
 	WORTMANN_FTP_SERVER          string `env:"WORTMANN_FTP_SERVER,required"`
