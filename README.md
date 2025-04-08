@@ -20,13 +20,25 @@ go get .
 go build
 ```
 
-Die Datei `?.exe` ausführen.
+Die Datei `sw6-product-sync.exe` ausführen.
+
+## CLI-Argumente
+
+`-h` - Zeigt die Hilfe-Seite
+`-endless` - Startet das Programm in Dauerschleife, nur mit `-wait` zu verwenden
+`-wait` - Setzt ein Timeout in Stunden für die wiederholungen im Endlos Modus
+Bsp: `./sw6-product-sync.exe -endless -wait=4` - Startet das Programm im Endlos Modus alle 4 Stunden
+Ohne Befehle startet das Program einmalig und beendet danach.
+
+### Danger CLI
+
+`-delete-products` - Löscht alle Produkte
 
 ## Features
 
 - Download von Preislisten der Hersteller _Wortmann_ und _Kosatec_
 - NYI: Automatisches anlegen, pflegen und löschen der Artikel in Shopware 6
-- NYI: Automatisches anlegen von Herstellern und Kategorien in Shopware 6
+- Automatisches anlegen von Herstellern und Kategorien in Shopware 6
 - Konfigurierbare Preise und Kategorien
 - "Blacklisten" von Artikelnummern des Herstellers.
 - "Blacklisten" von kompletten Kategorien des Herstellers.

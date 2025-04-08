@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"log/slog"
@@ -15,6 +16,58 @@ import (
 const LOG = "log.txt"
 
 func main() {
+	help := flag.Bool("h", false, "Show Help")
+	endless := flag.Bool("endless", false, "Run Programm Endlessly")
+	deleteProducts := flag.Bool("delete-products", false, "Deletes all Products")
+	timer := flag.Int("wait", 0, "Time to wait between iterations")
+
+	flag.Parse()
+
+	if *deleteProducts {
+		fmt.Println("Running in deletion Mode")
+		fmt.Println("Deleting Products")
+		delete_products()
+	} else if *help {
+		fmt.Println("Help:")
+		fmt.Println("-h : Show this help Window")
+		fmt.Println("-endless : Run the Programm endlessly")
+		fmt.Println("-wait : time to wait between runs")
+		fmt.Println("------")
+		fmt.Println("Example:")
+		fmt.Println("./sw6-product-sync.exe -endless -wait=2")
+		fmt.Println("Programm runs, wait for 2 hours and runs again, infinite")
+	} else if !*help && !*endless && *timer > 0 {
+		fmt.Println("Invalid Argument Chain, -wait can only be used in conjunction with -endless")
+	} else if *endless && *timer == 0 {
+		fmt.Println("Invalid Argument Chain, -endless can only be used in conjunction with -wait")
+	} else if *endless && *timer > 0 {
+		fmt.Println("Starting Programm in endless Mode: Timer: ", *timer)
+		for {
+			run_program()
+			x := *timer
+			time.Sleep(time.Duration(x) * time.Hour)
+		}
+	} else {
+		fmt.Println("Running without Args, running programm once")
+		run_program()
+	}
+
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
+}
+
+func delete_products() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	App, err := app.New(logger)
+	if err != nil {
+		panic(err)
+	}
+	App.Delete_Products()
+}
+
+func run_program() {
 	start := time.Now()
 
 	f, err := os.OpenFile(LOG, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -70,13 +123,13 @@ func main() {
 		slog.Any("hersteller", len(Hersteller)),
 	)
 
-	// if !stop {
-	// 	err = App.SynHersteller(Hersteller)
-	// 	if err != nil {
-	// 		logger.Error("failed to sync manufacturer", slog.Any("error", err))
-	// 		stop = true
-	// 	}
-	// }
+	if !stop {
+		err = App.SynHersteller(Hersteller)
+		if err != nil {
+			logger.Error("failed to sync manufacturer", slog.Any("error", err))
+			stop = true
+		}
+	}
 
 	// if !stop {
 	// 	err = App.SyncCategories(NeueArtikel, AlteArtikel)
@@ -90,6 +143,14 @@ func main() {
 		err = App.CreateProducts(NeueArtikel, AlteArtikel)
 		if err != nil {
 			logger.Error("failed to sync Products", slog.Any("error", err))
+			stop = true
+		}
+	}
+
+	if !stop {
+		err = App.CreateImages(NeueArtikel)
+		if err != nil {
+			logger.Error("failed to create images", slog.Any("error", err))
 			stop = true
 		}
 	}
@@ -123,8 +184,4 @@ func main() {
 	// if err := App.SendLog(LOG, stop); err != nil {
 	// 	panic(err)
 	// }
-}
-
-func bToMb(b uint64) uint64 {
-	return b / 1024 / 1024
 }
