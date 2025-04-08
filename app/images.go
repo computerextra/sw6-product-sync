@@ -12,6 +12,7 @@ import (
 )
 
 func (a App) CreateImages(artikel []shopware.Artikel) error {
+	// TODO: Import geht nicht, Felder sind schreibgeschützt... Muss ich wahrscheinlich so machen, wie im alten!
 	for _, item := range artikel {
 		if len(item.Bilder) > 0 {
 			coverId := ""
@@ -20,8 +21,6 @@ func (a App) CreateImages(artikel []shopware.Artikel) error {
 				continue
 			}
 			bilder := strings.Split(item.Bilder, "|")
-			mediaEntity := []sdk.Media{}
-			productMediaEntity := []sdk.ProductMedia{}
 
 			for idx, bild := range bilder {
 				FileName := filepath.Base(bild)
@@ -38,63 +37,50 @@ func (a App) CreateImages(artikel []shopware.Artikel) error {
 
 				if idx == 0 {
 					coverId = ProductMediaId
+				} else {
+					coverId = ""
 				}
-
-				mediaEntity = append(mediaEntity, sdk.Media{
+				_, err = a.client.NewRequest(a.ctx, "POST", "/api/media", ImagePayload{
 					Id:            MediaId,
 					MediaFolderId: a.env.MEDIA_FOLDER_ID,
-					Url:           bild,
-					FileExtension: FileSuffix,
 				})
-				productMediaEntity = append(productMediaEntity, sdk.ProductMedia{
-					Id:        ProductMediaId,
-					ProductId: ProductId,
-					MediaId:   MediaId,
-				})
-			}
-
-			// Create new Media
-
-			_, err = a.client.Repository.Media.Upsert(a.ctx, mediaEntity)
-			if err != nil {
-				a.logger.Error("failed to create media", slog.Any("error", err), slog.Any("item", item.Artikelnummer))
-				fmt.Println("Trying to create each media")
-				for _, load := range mediaEntity {
-					_, err := a.client.Repository.Media.Upsert(a.ctx, []sdk.Media{
-						load,
-					})
-					if err != nil {
-						a.logger.Error("fialed to create Media", slog.Any("error", err), slog.Any("payload", load))
-						continue
-					}
+				if err != nil {
+					a.logger.Error("failed to create media", slog.Any("error", err))
+					continue
 				}
-			}
-			time.Sleep(20 * time.Second)
-			_, err = a.client.Repository.ProductMedia.Upsert(a.ctx, productMediaEntity)
-			if err != nil {
-				a.logger.Error("failed to upload media", slog.Any("error", err), slog.Any("item", item.Artikelnummer))
-				fmt.Println("Trying to upload media")
-				for _, load := range productMediaEntity {
-					_, err := a.client.Repository.ProductMedia.Upsert(a.ctx, []sdk.ProductMedia{
-						load,
-					})
-					if err != nil {
-						a.logger.Error("fialed to upload Media", slog.Any("error", err), slog.Any("payload", load))
-						a.client.Repository.Media.Delete(a.ctx, []string{load.MediaId})
-						continue
-					}
-				}
-			}
-			if len(coverId) != 0 {
 				time.Sleep(20 * time.Second)
-				_, err := a.client.Repository.Product.Upsert(a.ctx, []sdk.Product{
+				_, err = a.client.NewRequest(a.ctx, "POST", fmt.Sprintf("/api_action/media/%s/upload", MediaId), ImageUploadPayload{
+					MediaId:   MediaId,
+					Url:       bild,
+					Extension: FileSuffix,
+					Filename:  FileName,
+				})
+				if err != nil {
+					a.logger.Error("failed to upload media", slog.Any("error", err))
+					continue
+				}
+				time.Sleep(20 * time.Second)
+				// TODO: Link geht nicht!
+				_, err = a.client.Repository.ProductMedia.Upsert(a.ctx, []sdk.ProductMedia{
 					{
-						Id:      ProductId,
-						CoverId: coverId,
+						Id:        ProductMediaId,
+						ProductId: ProductId,
+						MediaId:   MediaId,
 					},
 				})
 				if err != nil {
-					a.logger.Error("failed to create cover", slog.Any("error", err), slog.Any("item", item.Artikelnummer))
+					a.logger.Error("failed to link media", slog.Any("error", err))
+					continue
+				}
+				time.Sleep(20 * time.Second)
+				if len(coverId) > 0 {
+					_, err := a.client.NewRequest(a.ctx, "PATCH", fmt.Sprintf("/api/product/%s", ProductId), CoverPayload{
+						CoverId: coverId,
+					})
+					if err != nil {
+						a.logger.Error("failed to link cover media", slog.Any("error", err))
+						continue
+					}
 				}
 			}
 		}
@@ -102,4 +88,20 @@ func (a App) CreateImages(artikel []shopware.Artikel) error {
 	}
 
 	return nil
+}
+
+type ImagePayload struct {
+	Id            string `json:"id"`
+	MediaFolderId string `json:"mediaFolderId"`
+}
+
+type ImageUploadPayload struct {
+	MediaId   string `json:"mediaId"`
+	Url       string `json:"url"`
+	Extension string `json:"extension"`
+	Filename  string `json:"filename"`
+}
+
+type CoverPayload struct {
+	CoverId string `json:"coverId"`
 }
