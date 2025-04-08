@@ -7,11 +7,10 @@ import (
 )
 
 func (a App) getAllProducts() (*sdk.ProductCollection, error) {
-	apiContext := sdk.NewApiContext(a.ctx)
 	criteria := sdk.Criteria{}
 	criteria.Filter = []sdk.CriteriaFilter{{Type: "equals", Field: "parentId", Value: nil}}
 	criteria.Limit = 500
-	collection, _, err := a.client.Repository.Product.SearchAll(apiContext, criteria)
+	collection, _, err := a.client.Repository.Product.SearchAll(a.ctx, criteria)
 	if err != nil {
 		return nil, err
 	}

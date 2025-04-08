@@ -3,8 +3,6 @@ package app
 import (
 	"log/slog"
 	"time"
-
-	sdk "github.com/friendsofshopware/go-shopware-admin-api-sdk"
 )
 
 func (a App) Delete_Products() {
@@ -32,9 +30,7 @@ func (a App) Delete_Products() {
 }
 
 func (a App) send_delete_payload(payload []string) {
-
-	apiContext := sdk.NewApiContext(a.ctx)
-	_, err := a.client.Repository.Product.Delete(apiContext, payload)
+	_, err := a.client.Repository.Product.Delete(a.ctx, payload)
 	if err != nil {
 		panic(err)
 	}
