@@ -140,7 +140,15 @@ func run_program() {
 	// }
 
 	if !stop {
-		err = App.CreateProducts(NeueArtikel, AlteArtikel)
+		err = App.CreateProducts(AlteArtikel)
+		if err != nil {
+			logger.Error("failed to sync Products", slog.Any("error", err))
+			stop = true
+		}
+	}
+
+	if !stop {
+		err = App.CreateProducts(NeueArtikel)
 		if err != nil {
 			logger.Error("failed to sync Products", slog.Any("error", err))
 			stop = true

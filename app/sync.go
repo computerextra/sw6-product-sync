@@ -195,10 +195,8 @@ func (a App) send_product_payload(payloads []ProductPayload) error {
 	return nil
 }
 
-func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
-	artikel := []shopware.Artikel{}
-	artikel = append(artikel, alt[:]...)
-	artikel = append(artikel, neu[:]...)
+func (a App) CreateProducts(artikel []shopware.Artikel) error {
+
 	a.logger.Info("items to be processed:", slog.Any("no. of items", len(artikel)))
 	artikel = remove_duplicates(artikel)
 	a.logger.Info("items to be processed after removing duplicates:", slog.Any("no. of items", len(artikel)))
@@ -209,15 +207,20 @@ func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
 	for _, item := range artikel {
 		if count >= MAXUPLOADS {
 			if err := a.send_product_payload(payloads); err != nil {
-				fmt.Println("Failed to complete Payload")
-				fmt.Println("Sync every single Produkt")
-				for _, load := range payloads {
-					var x []ProductPayload
-					x = append(x, load)
-					a.send_product_payload(x)
-					fmt.Println("synced Product, wait for 20 Secs")
-					time.Sleep(20 * time.Second)
+				fmt.Println("Failed to complete Payload; Wait for 2 minutes and try again")
+				time.Sleep(2 * time.Minute)
+				if err := a.send_product_payload(payloads); err != nil {
+					fmt.Println("Failed to complete Payload again.")
+					fmt.Println("Sync every single Produkt")
+					for _, load := range payloads {
+						var x []ProductPayload
+						x = append(x, load)
+						a.send_product_payload(x)
+						fmt.Println("synced Product, wait for 20 Secs")
+						time.Sleep(20 * time.Second)
+					}
 				}
+
 			}
 			count = 0
 			payloads = []ProductPayload{}
@@ -449,18 +452,18 @@ func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
 
 	if len(payloads) > 0 {
 		if err := a.send_product_payload(payloads); err != nil {
-			fmt.Println("Failed to complete Payload")
-			fmt.Println("Sync every single Produkt")
-			for _, load := range payloads {
-				var x []ProductPayload
-				x = append(x, load)
-				err := a.send_product_payload(x)
-				if err != nil {
-					a.logger.Error("unable to sync product", slog.Any("error", err), slog.Any("payload", load))
-				} else {
+			fmt.Println("Failed to complete Payload; Wait for 2 minutes and try again")
+			time.Sleep(2 * time.Minute)
+			if err := a.send_product_payload(payloads); err != nil {
+				fmt.Println("Failed to complete Payload again.")
+				fmt.Println("Sync every single Produkt")
+				for _, load := range payloads {
+					var x []ProductPayload
+					x = append(x, load)
+					a.send_product_payload(x)
 					fmt.Println("synced Product, wait for 20 Secs")
+					time.Sleep(20 * time.Second)
 				}
-				time.Sleep(20 * time.Second)
 			}
 		}
 	}
