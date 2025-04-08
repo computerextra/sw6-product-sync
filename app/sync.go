@@ -469,21 +469,22 @@ func (a App) CreateProducts(neu, alt []shopware.Artikel) error {
 	return nil
 }
 
-func findCategory(artikel shopware.Artikel) string {
-	var cat string
-	if len(artikel.Kategorie6) > 0 {
-		cat = artikel.Kategorie6
-	} else if len(artikel.Kategorie5) > 0 {
-		cat = artikel.Kategorie5
-	} else if len(artikel.Kategorie4) > 0 {
-		cat = artikel.Kategorie4
-	} else if len(artikel.Kategorie3) > 0 {
-		cat = artikel.Kategorie3
-	} else if len(artikel.Kategorie2) > 0 {
-		cat = artikel.Kategorie2
-	} else {
-		cat = artikel.Kategorie1
-	}
+func (a App) Delete_Eol(artikel []string) error {
+	var ids []string
 
-	return cat
+	for _, item := range artikel {
+		id, err := a.Uuid(item)
+		if err != nil {
+			continue
+		}
+		ids = append(ids, id)
+	}
+	if len(ids) > 0 {
+		_, err := a.client.Repository.Product.Delete(a.ctx, ids)
+		if err != nil {
+			return err
+		}
+	}
+	a.logger.Info("Successfully deleted eol products", slog.Any("items", len(artikel)))
+	return nil
 }

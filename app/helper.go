@@ -189,3 +189,22 @@ func (a App) calculate_price(ek float64, kategorie string, count int) (float64, 
 
 	return vk, vk / taxPercent
 }
+
+func findCategory(artikel shopware.Artikel) string {
+	var cat string
+	if len(artikel.Kategorie6) > 0 {
+		cat = artikel.Kategorie6
+	} else if len(artikel.Kategorie5) > 0 {
+		cat = artikel.Kategorie5
+	} else if len(artikel.Kategorie4) > 0 {
+		cat = artikel.Kategorie4
+	} else if len(artikel.Kategorie3) > 0 {
+		cat = artikel.Kategorie3
+	} else if len(artikel.Kategorie2) > 0 {
+		cat = artikel.Kategorie2
+	} else {
+		cat = artikel.Kategorie1
+	}
+
+	return cat
+}

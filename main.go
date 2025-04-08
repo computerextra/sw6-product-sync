@@ -156,6 +156,14 @@ func run_program() {
 	}
 
 	if !stop {
+		err = App.Delete_Eol(EolArtikel)
+		if err != nil {
+			logger.Error("failed to delete eol products", slog.Any("error", err))
+			stop = true
+		}
+	}
+
+	if !stop {
 		// App.Cleanup()
 	}
 
